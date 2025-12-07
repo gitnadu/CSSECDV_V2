@@ -1,0 +1,96 @@
+'use client';
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+
+/**
+ * CoursesView - Displays sections for enrollment
+ * Now shows SECTIONS (concrete) instead of courses (abstract)
+ * Each section has: course code, section name, professor, capacity (max 5)
+ */
+export default function CoursesView({ sections, userRole, onEnroll, enrolledSectionIds = [] }) {
+  // Group sections by course for better organization
+  const sectionsByCourse = sections.reduce((acc, section) => {
+    const courseCode = section.course_code;
+    if (!acc[courseCode]) {
+      acc[courseCode] = {
+        course_name: section.course_name,
+        sections: []
+      };
+    }
+    acc[courseCode].sections.push(section);
+    return acc;
+  }, {});
+
+  return (
+    <div className="space-y-6">
+      {Object.entries(sectionsByCourse).map(([courseCode, courseData]) => (
+        <div key={courseCode} className="space-y-3">
+          <h3 className="text-lg font-semibold border-b pb-2">
+            {courseCode} - {courseData.course_name}
+          </h3>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {courseData.sections.map(section => {
+              const isFull = section.enrolled_count >= section.capacity;
+              const isEnrolled = enrolledSectionIds.includes(section.id);
+              const isClosed = section.is_open === false;
+              const canEnroll = !isFull && !isClosed && !isEnrolled;
+
+              return (
+                <Card key={section.id} className={isEnrolled ? 'border-green-500 border-2' : isClosed ? 'border-red-300 border-2 bg-gray-50' : ''}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg flex justify-between items-center">
+                      <span>{section.course_code}-{section.section_name}</span>
+                      <div className="flex gap-2">
+                        {isClosed && (
+                          <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
+                            Closed
+                          </span>
+                        )}
+                        {isEnrolled && (
+                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                            Enrolled
+                          </span>
+                        )}
+                      </div>
+                    </CardTitle>
+                    <CardDescription>{section.professor_name || 'TBA'}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2 text-sm">
+                      {/* {section.schedule && (
+                        <p><strong>Schedule:</strong> {section.schedule}</p>
+                      )} */}
+                      <p><strong>Capacity:</strong> {section.enrolled_count}/{section.capacity}</p>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div
+                          className={`h-2 rounded-full ${isFull ? 'bg-red-500' : isClosed ? 'bg-gray-400' : 'bg-blue-600'}`}
+                          style={{ width: `${(section.enrolled_count / section.capacity) * 100}%` }}
+                        />
+                      </div>
+                      {userRole === 'student' && !isEnrolled && (
+                        <Button
+                          onClick={() => onEnroll(section.id)}
+                          disabled={!canEnroll}
+                          className="w-full mt-2"
+                          size="sm"
+                        >
+                          {isClosed ? 'Closed' : isFull ? 'Full' : 'Enroll'}
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+      {sections.length === 0 && (
+        <div className="text-center py-8 text-gray-500">
+          No sections available
+        </div>
+      )}
+    </div>
+  );
+}
