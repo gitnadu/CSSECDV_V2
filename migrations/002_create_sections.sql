@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS sections (
   id SERIAL PRIMARY KEY,
   course_id INTEGER NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
   section_name CHAR(1) NOT NULL,
-  professor_id INTEGER NOT NULL,
+  professor_id INTEGER,
   capacity INTEGER DEFAULT 5,
   enrolled_count INTEGER DEFAULT 0,
   schedule VARCHAR(255),

@@ -25,10 +25,16 @@ export default function AdminView({ session }) {
   const [selectedSection, setSelectedSection] = useState(null);
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showAddCourseModal, setShowAddCourseModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [studentEnrollments, setStudentEnrollments] = useState([]);
   const [notification, setNotification] = useState(null);
   const [dropConfirmation, setDropConfirmation] = useState(null);
+  const [newCourseData, setNewCourseData] = useState({ code: '', name: '', description: '' });
+  const [courseErrors, setCourseErrors] = useState({});
+  const [showAddSectionModal, setShowAddSectionModal] = useState(false);
+  const [newSectionData, setNewSectionData] = useState({ course_id: '', section_name: '', capacity: '5', schedule: '', professor_id: '' });
+  const [sectionErrors, setSectionErrors] = useState({});
 
   useEffect(() => {
     // load admin data via session provider
@@ -88,7 +94,13 @@ export default function AdminView({ session }) {
       await handleFetchAdminData();
     } catch (err) {
       console.error('Error assigning professor:', err);
-      alert(err.message || 'Failed to assign professor');
+      setNotification({
+        type: 'error',
+        message: err.message || 'Failed to assign professor'
+      });
+      setTimeout(() => {
+        setNotification(null);
+      }, 3000);
     }
   };
 
@@ -169,8 +181,9 @@ export default function AdminView({ session }) {
 
       setNotification({ type: 'success', message: `Student dropped successfully` });
 
-      await handleViewStudentEnrollments(selectedStudent);
-      setDropConfirmation(null);
+      setNewCourseData({ code: '', name: '', description: '' });
+      setCourseErrors({});
+      setShowAddCourseModal(false);
 
       setTimeout(() => { setNotification(null); }, 3000);
     } catch (err) {
@@ -199,6 +212,17 @@ export default function AdminView({ session }) {
 
   return (
     <div className="space-y-6">
+      {notification && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+          <div className={`px-6 py-4 rounded-lg shadow-lg pointer-events-auto max-w-md ${
+            notification.type === 'success' 
+              ? 'bg-green-100 border border-green-400 text-green-800' 
+              : 'bg-red-100 border border-red-400 text-red-800'
+          }`}>
+            {notification.message}
+          </div>
+        </div>
+      )}
       <Tabs defaultValue="faculty" className="space-y-4">
         <TabsList>
           <TabsTrigger value="faculty">Faculty ({faculty.length})</TabsTrigger>
@@ -474,8 +498,11 @@ export default function AdminView({ session }) {
 
         <TabsContent value="courses">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Courses</CardTitle>
+              <Button onClick={() => setShowAddCourseModal(true)} className="bg-blue-600 hover:bg-blue-700">
+                Add Course
+              </Button>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
@@ -506,8 +533,11 @@ export default function AdminView({ session }) {
 
         <TabsContent value="sections">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Sections</CardTitle>
+              <Button onClick={() => setShowAddSectionModal(true)} className="bg-blue-600 hover:bg-blue-700">
+                Add Section
+              </Button>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
@@ -651,7 +681,203 @@ export default function AdminView({ session }) {
         </div>
       )}
 
+      {showAddCourseModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>Add New Course</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Course Code</label>
+                <input
+                  type="text"
+                  placeholder="e.g., CS101"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${courseErrors.code ? 'border-red-500' : 'border-gray-300'}`}
+                  value={newCourseData.code}
+                  onChange={(e) => {
+                    setNewCourseData({ ...newCourseData, code: e.target.value });
+                    // Clear error when user starts typing
+                    if (courseErrors.code) {
+                      const newErrors = { ...courseErrors };
+                      delete newErrors.code;
+                      setCourseErrors(newErrors);
+                    }
+                  }}
+                  onBlur={validateCourseForm}
+                />
+                {courseErrors.code ? (
+                  <p className="text-red-500 text-xs mt-1">{courseErrors.code}</p>
+                ) : (
+                  <p className="text-xs text-gray-500 mt-1">Must be 2-50 characters, letters and numbers only</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Course Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g., Introduction to Computer Science"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${courseErrors.name ? 'border-red-500' : 'border-gray-300'}`}
+                  value={newCourseData.name}
+                  onChange={(e) => {
+                    setNewCourseData({ ...newCourseData, name: e.target.value });
+                    // Clear error when user starts typing
+                    if (courseErrors.name) {
+                      const newErrors = { ...courseErrors };
+                      delete newErrors.name;
+                      setCourseErrors(newErrors);
+                    }
+                  }}
+                  onBlur={validateCourseForm}
+                />
+                {courseErrors.name ? (
+                  <p className="text-red-500 text-xs mt-1">{courseErrors.name}</p>
+                ) : (
+                  <p className="text-xs text-gray-500 mt-1">Must be 3-255 characters</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description (Optional)</label>
+                <textarea
+                  placeholder="Enter course description"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  rows="3"
+                  value={newCourseData.description}
+                  onChange={(e) => setNewCourseData({ ...newCourseData, description: e.target.value })}
+                />
+                <p className="text-xs text-gray-500 mt-1">Optional field for additional course information</p>
+              </div>
+              <div className="flex gap-2 pt-4">
+                <Button
+                  onClick={handleAddCourse}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                >
+                  Add Course
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowAddCourseModal(false);
+                    setNewCourseData({ code: '', name: '', description: '' });
+                    setCourseErrors({});
+                  }}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {showAddSectionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>Add New Section</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Course</label>
+                <select
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${sectionErrors.course_id ? 'border-red-500' : 'border-gray-300'}`}
+                  value={newSectionData.course_id}
+                  onChange={(e) => setNewSectionData({ ...newSectionData, course_id: e.target.value })}
+                >
+                  <option value="">Select a course</option>
+                  {courses.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.code} - {c.name}
+                    </option>
+                  ))}
+                </select>
+                {sectionErrors.course_id && <p className="text-red-500 text-xs mt-1">{sectionErrors.course_id}</p>}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Section Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g., A, B, C"
+                  maxLength="1"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase ${sectionErrors.section_name ? 'border-red-500' : 'border-gray-300'}`}
+                  value={newSectionData.section_name}
+                  onChange={(e) => setNewSectionData({ ...newSectionData, section_name: e.target.value.toUpperCase() })}
+                />
+                {sectionErrors.section_name ? (
+                  <p className="text-red-500 text-xs mt-1">{sectionErrors.section_name}</p>
+                ) : (
+                  <p className="text-xs text-gray-500 mt-1">Must be a single letter (A-Z)</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Capacity</label>
+                <input
+                  type="number"
+                  min="5"
+                  max="45"
+                  placeholder="5"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${sectionErrors.capacity ? 'border-red-500' : 'border-gray-300'}`}
+                  value={newSectionData.capacity}
+                  onChange={(e) => setNewSectionData({ ...newSectionData, capacity: e.target.value })}
+                />
+                {sectionErrors.capacity ? (
+                  <p className="text-red-500 text-xs mt-1">{sectionErrors.capacity}</p>
+                ) : (
+                  <p className="text-xs text-gray-500 mt-1">Minimum 5 Maximum 45</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Schedule (Optional)</label>
+                <input
+                  type="text"
+                  placeholder="e.g., MWF 10:00-11:00"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${sectionErrors.schedule ? 'border-red-500' : 'border-gray-300'}`}
+                  value={newSectionData.schedule}
+                  onChange={(e) => setNewSectionData({ ...newSectionData, schedule: e.target.value })}
+                />
+                {sectionErrors.schedule && <p className="text-red-500 text-xs mt-1">{sectionErrors.schedule}</p>}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Professor (Optional)</label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={newSectionData.professor_id}
+                  onChange={(e) => setNewSectionData({ ...newSectionData, professor_id: e.target.value })}
+                >
+                  <option value="">No professor assigned</option>
+                  {faculty.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.first_name} {f.last_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex gap-2 pt-4">
+                <Button
+                  onClick={handleAddSection}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                >
+                  Add Section
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowAddSectionModal(false);
+                    setNewSectionData({ course_id: '', section_name: '', capacity: '5', schedule: '', professor_id: '' });
+                    setSectionErrors({});
+                  }}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
     </div>
   );
 }
+
