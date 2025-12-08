@@ -5,9 +5,13 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
+import { useSession  } from "@/context/SessionProvider";
 
 
-export default function FacultyView({ enrollments, sections, onUploadGrade, onToggleEnrollment }) {
+export default function FacultyView({ enrollments, sections }) {
+
+  const { uploadGrade, toggleEnrollment } = useSession();
+
   const [gradeForm, setGradeForm] = useState({ enrollmentId: '', grade: '' });
   const [error, setError] = useState('');
   const [selectedSection, setSelectedSection] = useState('all');
@@ -15,9 +19,7 @@ export default function FacultyView({ enrollments, sections, onUploadGrade, onTo
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState('by-section'); // 'by-section' or 'all'
 
-  console.log("enrollments in faculty view " + JSON.stringify(enrollments))
-  console.log("sections in faculty view " + JSON.stringify(sections))
-  
+
   // Valid grade options
   const gradeOptions = [
     { value: '', label: 'Select Grade' },
@@ -75,7 +77,7 @@ export default function FacultyView({ enrollments, sections, onUploadGrade, onTo
     if (searchTerm) {
       filtered = filtered.filter(e => 
         e.student_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        e.enrollment_id?.toString().includes(searchTerm) ||
+        e.id?.toString().includes(searchTerm) ||
         e.course_code?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -90,7 +92,7 @@ export default function FacultyView({ enrollments, sections, onUploadGrade, onTo
           const gradeB = b.grade ? parseFloat(b.grade) : 999;
           return gradeA - gradeB;
         case 'enrollment_id':
-          return a.enrollment_id - b.enrollment_id;
+          return a.id - b.id;
         default:
           return 0;
       }
@@ -101,7 +103,7 @@ export default function FacultyView({ enrollments, sections, onUploadGrade, onTo
 
 
 const handleSubmit = () => {
-    // Clear previous error
+    // Clear previous errorf
     setError('');
 
     // Validate enrollment ID
@@ -118,7 +120,7 @@ const handleSubmit = () => {
 
     // Check if enrollment ID exists
     const enrollmentExists = enrollments.some(
-      e => e.enrollment_id === parseInt(gradeForm.enrollmentId)
+      e => e.id === parseInt(gradeForm.Id)
     );
 
     if (!enrollmentExists) {
@@ -127,7 +129,7 @@ const handleSubmit = () => {
     }
 
     // Submit if validation passes
-    onUploadGrade(parseInt(gradeForm.enrollmentId), gradeForm.grade);
+    uploadGrade(parseInt(gradeForm.enrollmentId), gradeForm.grade);
     setGradeForm({ enrollmentId: '', grade: '' });
     setError('');
   };
@@ -232,7 +234,7 @@ const handleSubmit = () => {
                             </div>
                             {sectionId && (
                               <Button
-                                onClick={() => onToggleEnrollment(sectionId, !isOpen)}
+                                onClick={() => toggleEnrollment(sectionId, !isOpen)}
                                 variant={isOpen ? 'destructive' : 'default'}
                                 size="sm"
                               >
@@ -248,10 +250,10 @@ const handleSubmit = () => {
                             .sort((a, b) => (a.student_name || '').localeCompare(b.student_name || ''))
                             .map(enrollment => (
                               <EnrollmentCard 
-                                key={enrollment.enrollment_id} 
+                                key={enrollment.id} 
                                 enrollment={enrollment}
                                 gradeOptions={gradeOptions}
-                                onUploadGrade={onUploadGrade}
+                                uploadGrade={uploadGrade}
                               />
                             ))}
                         </div>
@@ -295,7 +297,7 @@ const handleSubmit = () => {
                 >
                   <option value="student">Sort by: Student Name</option>
                   <option value="grade">Sort by: Grade</option>
-                  <option value="enrollment_id">Sort by: Enrollment ID</option>
+                  <option value="id">Sort by: Enrollment ID</option>
                 </select>
               </div>
 
@@ -303,10 +305,9 @@ const handleSubmit = () => {
               <div className="space-y-2">
                 {filteredAndSortedEnrollments.map(enrollment => (
                   <EnrollmentCard 
-                    key={enrollment.enrollment_id} 
                     enrollment={enrollment}
                     gradeOptions={gradeOptions}
-                    onUploadGrade={onUploadGrade}
+                    uploadGrade={uploadGrade}
                   />
                 ))}
                 {filteredAndSortedEnrollments.length === 0 && (
@@ -324,13 +325,14 @@ const handleSubmit = () => {
 }
 
 // Enrollment Card Component
-function EnrollmentCard({ enrollment, gradeOptions, onUploadGrade }) {
+function EnrollmentCard({ enrollment, gradeOptions, uploadGrade }) {
   const [isEditing, setIsEditing] = useState(false);
   const [newGrade, setNewGrade] = useState(enrollment.grade || '');
 
   const handleSave = () => {
     if (newGrade && newGrade !== '') {
-      onUploadGrade(enrollment.enrollment_id, newGrade);
+      console.log('Uploading grade:', newGrade, 'for enrollment ID:', enrollment.id);
+      uploadGrade(enrollment.id, newGrade);
       setIsEditing(false);
     }
   };
@@ -343,7 +345,7 @@ function EnrollmentCard({ enrollment, gradeOptions, onUploadGrade }) {
             <div>
               <p className="font-semibold text-lg">{enrollment.student_name || 'Unknown'}</p>
               <p className="text-xs text-gray-500">
-                ID: {enrollment.enrollment_id} | {enrollment.course_code}-{enrollment.section_name}
+                ID: {enrollment.id} | {enrollment.course_code}-{enrollment.section_name}
               </p>
             </div>
           </div>

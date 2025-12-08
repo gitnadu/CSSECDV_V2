@@ -23,7 +23,28 @@ class EnrollmentService {
   }
 
   /**
-   * Drop an enrolled section
+   * Drop an enrolled section by ID
+   * Backend checks:
+   *  - if grade is NULL
+   */
+  async dropEnrollment(enrollmentId) {
+    try {
+      const data = await api.delete(`/api/enrollment/delete`, { enrollmentId });
+
+      return {
+        success: true,
+        message: data.message || "Successfully dropped",
+      };
+    } catch (err) {
+      return {
+        success: false,
+        error: err.message || "Failed to drop enrollment",
+      };
+    }
+  }
+
+  /**
+   * Drop an enrolled section (legacy - by sectionId)
    * Backend checks:
    *  - if user owns the enrollment
    *  - if grade is NULL

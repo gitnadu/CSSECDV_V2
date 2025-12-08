@@ -22,7 +22,8 @@ export async function GET(req) {
         { status: 401 }
       );
     }
-    const enrollments = await EnrollmentRepository.findByIdWithDetails(payload.id);
+
+    const enrollments = await EnrollmentRepository.findByProfessorIdWithDetails(payload.id);
 
     return NextResponse.json({ success: true, enrollments });
   } catch (err) {
