@@ -4,21 +4,29 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Alert, AlertDescription } from '../../components/ui/alert';
+import { useSession  } from "@/context/SessionProvider";
 
-export default function LoginView({ onLogin }) {
+export default function LoginView() {
   const [formData, setFormData] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  //console.log("Submitting login with:", formData);
+  const { login } = useSession();
+  
   const handleSubmit = async () => {
     setError('');
     setLoading(true);
     try {
-      const result = await onLogin(formData.username, formData.password);
+      
+      const result = await login(formData.username, formData.password);
+
       if (!result.success) {
         setError(result.error);
       }
+
     } catch (err) {
+      console.log("the error inside handleSubmit:", err.message);
       setError('An error occurred during login');
     } finally {
       setLoading(false);

@@ -1,4 +1,4 @@
-import CoursesView from "@/components/views/CoursesView";
+import CoursesView from "@/views/components/CoursesView";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 

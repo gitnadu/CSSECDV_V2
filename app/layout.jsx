@@ -1,17 +1,19 @@
-import { Inter } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
+import { SessionProvider } from "@/context/SessionProvider";
 
 export const metadata = {
-  title: "Enrollment System - Distributed MVC",
-  description: "A distributed enrollment system using MVC architecture",
+  title: "Enrollment System",
+  description: "Distributed Online Enrollment Web App",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body>
+        <SessionProvider>
+          {children}
+        </SessionProvider>
+      </body>
     </html>
   );
 }

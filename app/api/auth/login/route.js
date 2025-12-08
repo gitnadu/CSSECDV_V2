@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { UserRepository } from "@/lib/userRepository";
+import { UserRepository } from "lib/userRepository";
 import {
   generateAccessToken,
   generateRefreshToken,
   getExpirationDate,
-} from "@/lib/auth";
+} from "lib/auth";
 
 export async function POST(req) {
   try {

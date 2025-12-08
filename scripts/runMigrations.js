@@ -1,11 +1,13 @@
 // scripts/runMigrations.js
 // Run with: node scripts/runMigrations.js
 
-import { runMigrations } from "../lib/migrations.js";
+
 import dotenv from "dotenv";
 
 // Load .env.local or environment variables
 dotenv.config({ path: ".env.local" });
+
+import { runMigrations } from "../lib/migrations.js";
 
 async function main() {
   console.log("===========================================");

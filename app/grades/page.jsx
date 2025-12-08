@@ -1,4 +1,4 @@
-import GradesView from "@/components/views/GradesView";
+import GradesView from "@/views/components/GradesView";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 

@@ -1,9 +1,12 @@
+'use client';
+
 import React, { createContext, useContext, useEffect, useState } from "react";
-import AuthService from "../services/authService";
+import AuthService from "@/services/authService";
 
 const SessionContext = createContext();
 
 export function useSession() {
+
   const ctx = useContext(SessionContext);
   if (!ctx) throw new Error("useSession must be used within SessionProvider");
   return ctx;
@@ -37,6 +40,7 @@ export function SessionProvider({ children }) {
   // ----- LOGIN -----
   const login = async (username, password) => {
     const result = await AuthService.login(username, password);
+    console.log("result from AuthService:", result);
     if (result.success) {
       // Backend sets HttpOnly cookie; just store user object
       setSession(result.user);

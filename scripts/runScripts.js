@@ -13,6 +13,10 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { Pool } from "pg";
 
+import dotenv from "dotenv";
+dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
+
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -29,16 +33,11 @@ if (!fs.existsSync(seedPath)) {
 const seedSQL = fs.readFileSync(seedPath, "utf8");
 
 // -------------------------------
-// 2. Create dedicated pool
-// (Serverless pool should NOT be used for CLI scripts)
-// -------------------------------
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
-// -------------------------------
-// 3. Run seed SQL
-// -------------------------------
+
 async function runSeed() {
   console.log("🌱 Running database seed...");
 

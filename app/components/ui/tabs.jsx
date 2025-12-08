@@ -1,5 +1,5 @@
 import * as React from "react"
-import { cn } from "../../lib/utils"
+import { cn } from "lib/utils"
 
 const Tabs = React.forwardRef(({ className, defaultValue, children, ...props }, ref) => {
   const [value, setValue] = React.useState(defaultValue)
