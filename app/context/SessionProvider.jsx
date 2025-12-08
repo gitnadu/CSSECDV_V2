@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import AuthService from "@/services/authService";
+import CourseService from "@/services/courseService";
 import EnrollmentService from "@/services/enrollmentService";
 import { useRouter } from "next/navigation";
 
@@ -25,15 +26,45 @@ export function SessionProvider({ children }) {
   const [sections, setSections] = useState([]);
   const [enrollments, setEnrollments] = useState([]);
 
-  
+  const loadSectionsAndEnrollments = async () => {
+  try {
+    // fetch sections
+    const sectionsRes = await CourseService.getAllSections();
+
+    if (sectionsRes.success) {
+      setSections(sectionsRes.sections || []);
+    }
+    console.log("Sections loaded:", sectionsRes.sections);
+
+    // fetch my enrollments
+
+    const enrollmentsRes = await EnrollmentService.getMyEnrollments();
+    if (enrollmentsRes.success) {
+      setEnrollments(enrollmentsRes.enrollments || []);
+    }
+
+    console.log("Enrollments loaded:", enrollmentsRes.enrollments);
+
+  } catch (err) {
+    console.error("Error loading sections/enrollments:", err);
+  }
+};
 
   // Load session on first mount
   useEffect(() => {
     const loadSession = async () => {
       try {
         const result = await AuthService.getCurrentUser();
-        if (result.success) {
+
+        console.log("this is the result.user from auth")
+        console.log(result)
+        if (result.success) { // only run the following if the session is valid
           setSession(result.user);
+          
+          await loadSectionsAndEnrollments(result.user);
+
+
+
         } else {
           setSession(null);
         }
@@ -51,10 +82,10 @@ export function SessionProvider({ children }) {
   const enroll = async (sectionId) => {
     const result = await EnrollmentService.enrollInSection(sectionId);
 
-    console.log("Enrollment result:", result);
+    console.log("Enrollment result:", result.success);
 
     if (result.success) {
-      // update state so UI reacts
+      // update state so UI reactss
       setEnrollments(prev => [...prev, result.enrollment]);
 
       setSections(prev =>
@@ -65,6 +96,8 @@ export function SessionProvider({ children }) {
         )
       );
     }
+
+    return result;
   };
 
   // ----- LOGIN -----
@@ -102,11 +135,12 @@ export function SessionProvider({ children }) {
       }
     } catch (err) {
       setSession(null);
-      return { success: false, error: err.message };
+      return { success: false, error: err?.message };
     } finally {
       setChecking(false);
     }
   };
+
 
   const value = {
     session,
@@ -115,6 +149,11 @@ export function SessionProvider({ children }) {
     login,
     logout,
     refreshSession,
+    enroll,
+    sections,
+    setSections,
+    enrollments,
+    setEnrollments,
     isAuthenticated: !!session,
   };
 

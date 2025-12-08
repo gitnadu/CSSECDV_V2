@@ -11,18 +11,19 @@ import { useSession  } from "@/context/SessionProvider";
 
 export default function DashboardView({
   session, // decoded session object
-  sections,
-  enrollments,
   //onEnroll, -> replaced with enroll
   onDrop,
   onUploadGrade,
   onToggleEnrollment,
   message
 }) {
+
+  const { logout, enrollments, sections } = useSession();
+
+  console.log("session "+ session)
   // Get section IDs that the student is already enrolled in
   const enrolledSectionIds = enrollments.map(e => e.section_id);
-  const { logout } = useSession();
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">    
       <div className="max-w-6xl mx-auto">
@@ -58,10 +59,8 @@ export default function DashboardView({
 
             <TabsContent value="courses">
               <CoursesView
-                sections={sections}
                 userRole={session.role}
                 //enroll={enroll}
-                enrolledSectionIds={enrolledSectionIds}
               />
             </TabsContent>
 

@@ -9,12 +9,14 @@ import { useSession  } from "@/context/SessionProvider";
  * Now shows SECTIONS (concrete) instead of courses (abstract)
  * Each section has: course code, section name, professor, capacity (max 5)
  */
-export default function CoursesView({ sections, userRole, enrolledSectionIds = [] }) {
+export default function CoursesView({userRole}) {
 
-  const { enroll } = useSession();
+  const { enroll, sections, enrollments } = useSession();
 
   const [loadingSection, setLoadingSection] = useState(null);
   const [error, setError] = useState("");
+
+  const enrolledSectionIds = enrollments.map(e => e.section_id);
 
   const handleEnroll = async (sectionId) => {
     setError("");

@@ -25,7 +25,9 @@ class CourseService {
 
   async getAllSections() {
     try {
+      
       const data = await api.get("/api/sections");
+
       return { success: true, sections: data.sections };
     } catch (err) {
       return { success: false, sections: [], error: "Failed to fetch sections" };

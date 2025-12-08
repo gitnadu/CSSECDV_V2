@@ -17,12 +17,20 @@ npm install -D nodemon
 
 npm run dev
 
-db:
+FOR THE DATABASE SETUP:
+
+first:
+psql -U postgres -c "CREATE DATABASE enrollment_system;"
+
+*use the following credentials
+host: localhost
+port: 5432
 username: postgres
 password: 123456
 
 to run the scripting for the db:
 
 node runMigrations.js
-
 node runScripts.js
+
+
