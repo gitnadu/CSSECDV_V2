@@ -26,7 +26,7 @@ export function SessionProvider({ children }) {
   const [sections, setSections] = useState([]);
   const [enrollments, setEnrollments] = useState([]);
 
-  const loadSectionsAndEnrollments = async () => {
+  const loadSectionsAndEnrollments = async (role) => {
   try {
     // fetch sections
     const sectionsRes = await CourseService.getAllSections();
@@ -38,7 +38,13 @@ export function SessionProvider({ children }) {
 
     // fetch my enrollments
 
-    const enrollmentsRes = await EnrollmentService.getMyEnrollments(); // this gets the enrollment for the logged STUDEENT
+    let enrollmentsRes;
+
+    if (role == 'student') {
+      enrollmentsRes = await EnrollmentService.getMyEnrollments(); // this gets the enrollment for the logged STUDEENT
+    }else{
+      enrollmentsRes = await EnrollmentService.getMyEnrollmentsFaculty();
+    }
     
     if (enrollmentsRes.success) {
       setEnrollments(enrollmentsRes.enrollments || []);
@@ -58,11 +64,12 @@ export function SessionProvider({ children }) {
         const result = await AuthService.getCurrentUser();
 
         console.log("this is the result.user from auth")
-        console.log(result)
+        console.log(result.user.role)
+
         if (result.success) { // only run the following if the session is valid
           setSession(result.user);
           
-          await loadSectionsAndEnrollments(result.user);
+          await loadSectionsAndEnrollments(result.user.role); // load sections and enrollments after setting session
 
 
 
@@ -153,6 +160,8 @@ export function SessionProvider({ children }) {
       }
     } catch (err) {
       setSession(null);
+      setSections(null);
+      setEnrollments(null);
       return { success: false, error: err?.message };
     } finally {
       setChecking(false);

@@ -64,6 +64,23 @@ class EnrollmentService {
     }
   }
 
+  async getMyEnrollmentsFaculty() {
+    try {
+      const data = await api.get("/api/enrollment/faculty");
+
+      return {
+        success: true,
+        enrollments: data.enrollments || [],
+      };
+    } catch (err) {
+      return {
+        success: false,
+        enrollments: [],
+        error: err.message || "Failed to load enrollments",
+      };
+    }
+  }
+
   /**
    * Check if logged-in student has taken this course before
    * Useful for UI rules (whether student can retake)
