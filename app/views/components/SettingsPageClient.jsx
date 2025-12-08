@@ -26,6 +26,7 @@ export default function SettingsPageClient({ session }) {
   const [passwordErrors, setPasswordErrors] = useState([]);
   const [passwordMatchError, setPasswordMatchError] = useState('');
   const [currentPasswordError, setCurrentPasswordError] = useState('');
+  const [passwordAgeError, setPasswordAgeError] = useState('');
 
   const validatePassword = (password) => {
     const errors = [];
@@ -201,12 +202,16 @@ export default function SettingsPageClient({ session }) {
       setPasswordErrors([]);
       setPasswordMatchError('');
       setCurrentPasswordError('');
+      setPasswordAgeError('');
     } else {
-      // Check if error is about incorrect current password
+      // Check if error is about password verification or password age
       const errorMsg = result.error || 'Failed to change password';
-      if (errorMsg.toLowerCase().includes('incorrect') || errorMsg.toLowerCase().includes('current password')) {
-        setCurrentPasswordError(errorMsg);
-        setMessage({ type: 'error', text: 'Password change failed. Please check the error below.' });
+      if (errorMsg.toLowerCase().includes('verify') || errorMsg.toLowerCase().includes('current password')) {
+        setCurrentPasswordError('Unable to verify current password');
+        setMessage({ type: 'error', text: 'Password change failed. Please verify your current password and try again.' });
+      } else if (errorMsg.toLowerCase().includes('one day old') || errorMsg.toLowerCase().includes('wait')) {
+        // Password age policy error - display in the password policy banner
+        setPasswordAgeError(errorMsg);
       } else {
         setMessage({ type: 'error', text: errorMsg });
       }
@@ -322,6 +327,13 @@ export default function SettingsPageClient({ session }) {
             <CardHeader>
               <CardTitle>Change Password</CardTitle>
               <CardDescription>Update your password to keep your account secure</CardDescription>
+              <div className={`mt-2 p-3 rounded text-xs ${passwordAgeError ? 'bg-red-50 border border-red-200' : 'bg-blue-50 border border-blue-200'}`}>
+                {passwordAgeError ? (
+                  <p className="text-red-800"><strong>⚠ {passwordAgeError}</strong></p>
+                ) : (
+                  <p className="text-blue-800"><strong>Password Policy:</strong> For security reasons, passwords must be at least one day old before they can be changed.</p>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleChangePassword} className="space-y-4">
@@ -341,7 +353,7 @@ export default function SettingsPageClient({ session }) {
                   {currentPasswordError && (
                     <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
                       <p className="text-xs font-medium text-red-800">⚠ {currentPasswordError}</p>
-                      <p className="text-xs text-red-700 mt-1">Your existing password remains active. Please enter the correct current password to proceed.</p>
+                      <p className="text-xs text-red-700 mt-1">Your existing password remains active. Please double-check your current password and try again.</p>
                     </div>
                   )}
                 </div>
