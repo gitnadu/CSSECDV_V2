@@ -11,7 +11,7 @@ import { useSession  } from "@/context/SessionProvider";
  */
 export default function CoursesView({userRole}) {
 
-  const { enroll, sections, enrollments } = useSession();
+  const { enroll, sections, enrollments, loadSectionsAndEnrollments } = useSession();
 
   const [loadingSection, setLoadingSection] = useState(null);
   const [error, setError] = useState("");
@@ -31,6 +31,7 @@ export default function CoursesView({userRole}) {
       }
 
       // If success → SessionProvider updates global state → UI re-renders
+      await loadSectionsAndEnrollments(userRole); // refresh data to reflect new enrollment
     } catch (err) {
       console.error("Enroll error:", err);
       setError("Unexpected enrollment error");

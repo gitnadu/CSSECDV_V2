@@ -75,6 +75,7 @@ export async function PUT(req) {
     }
 
     const updatedUser = await UserRepository.update(userId, updateData);
+    
     if (!updatedUser) {
       return NextResponse.json({ error: "Failed to update user" }, { status: 500 });
     }
@@ -90,9 +91,9 @@ export async function PUT(req) {
     // Update session cookie with new token containing updated user data
     response.cookies.set("session", newAccessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60, // 1 hour
+      secure: true,
+      sameSite: "strict",
+      maxAge: 3600,
     });
 
     return response;

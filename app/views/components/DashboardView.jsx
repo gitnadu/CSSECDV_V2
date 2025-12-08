@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '../../components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { Alert, AlertDescription } from '../../components/ui/alert';
@@ -17,10 +17,18 @@ export default function DashboardView({
   message
 }) {
 
-  const { logout, enrollments, sections, drop } = useSession();
+  const { logout, enrollments, sections, drop, loadSectionsAndEnrollments } = useSession();
 
-  console.log("session " + session)
-  // Get section IDs that the student is already enrolled in
+  // Ensure sections/enrollments are loaded after client-side login/navigation
+  useEffect(() => {
+    if (!session) return;
+
+    // If there is no data yet, request it from the provider
+    if ((!sections || sections.length === 0) || (!enrollments || enrollments.length === 0)) {
+      loadSectionsAndEnrollments(session.role);
+    }
+  }, [session?.id]);
+
   const enrolledSectionIds = enrollments.map(e => e.section_id);
 
   const handleDrop = async (enrollmentId) => {

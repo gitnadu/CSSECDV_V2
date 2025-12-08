@@ -71,9 +71,6 @@ export function SessionProvider({ children }) {
       try {
         const result = await AuthService.getCurrentUser();
 
-        console.log("this is the result.user from auth")
-        console.log(result.user.role)
-
         if (result.success) { // only run the following if the session is valid
           setSession(result.user);
           
@@ -96,14 +93,12 @@ export function SessionProvider({ children }) {
   const enroll = async (sectionId) => {
     const result = await EnrollmentService.enrollInSection(sectionId);
 
-    console.log("Enrollment result:", result.success);
-
     if (result.success) {
-      // Refresh enrollments to get full details
-      await loadSectionsAndEnrollments();
+      // await loadSectionsAndEnrollments(result.enrollment.role);
+      return result;
     }
 
-    return result;
+    return null;
   };
 
   // ----- UPDATE PROFILE -----
@@ -125,10 +120,35 @@ export function SessionProvider({ children }) {
 
   // ----- CHANGE PASSWORD -----
   const changePassword = async (currentPassword, newPassword) => {
-    const result = await AuthService.changePassword(currentPassword, newPassword);
-    // Password change doesn't update session state, just return result
-    return result;
+    try {
+      const result = await AuthService.changePassword(currentPassword, newPassword);
+
+      if (!result.success) {
+        return result; // caller will show error
+      }
+
+      try {
+        await AuthService.logout();
+      } catch (e) {
+        console.warn("logout after pw change failed:", e);
+      }
+
+      // Clear sensitive client state
+      
+  
+
+      alert("Password changed. Please sign in again with your new password.");
+
+      router.push("/login");
+
+      // Return the original success result so caller can handle UI
+      return result;
+    } catch (err) {
+      console.error("changePassword error:", err);
+      return { success: false, error: err?.message || "Unknown error" };
+    }
   };
+
 
   // ----- TOGGLE ENROLLMENT (faculty) -----
   const toggleEnrollment = async (sectionId, isOpen) => {
@@ -217,6 +237,7 @@ export function SessionProvider({ children }) {
     if (result.success) {
       // Update local enrollments list with the returned enrollment
       const updatedEnrollment = result.enrollment;
+      
       setEnrollments((prev) =>
         prev.map((e) => {
           // Support both id and enrollment_id naming
@@ -247,7 +268,14 @@ export function SessionProvider({ children }) {
     try {
       await AuthService.logout();  // backend clears cookies
     } finally {
+
       setSession(null);
+      setSections([]);
+      setEnrollments([]);
+      setFaculty([]);
+      setStudents([]);
+      setCourses([]);
+
       router.push("/login");
     }
   };
@@ -303,6 +331,8 @@ export function SessionProvider({ children }) {
     getStudentEnrollments,
     enrollStudent,
     dropStudentEnrollment,
+    // expose loader so components can ensure data is present after client-side navigation
+    loadSectionsAndEnrollments,
   };
 
   return (

@@ -29,11 +29,13 @@ class EnrollmentService {
    */
   async dropEnrollment(enrollmentId) {
     try {
-      const data = await api.delete(`/api/enrollment/delete`, { enrollmentId });
+      // call the RESTful delete endpoint which accepts the enrollment id in the URL
+      const data = await api.delete(`/api/enrollment/${enrollmentId}`);
 
       return {
         success: true,
         message: data.message || "Successfully dropped",
+        enrollment: data.enrollment || null,
       };
     } catch (err) {
       return {

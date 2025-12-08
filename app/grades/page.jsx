@@ -1,4 +1,4 @@
-import GradesPageClient from "./GradesPageClient";
+import GradesPageClient from "@/views/components/GradesPageClient";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 

@@ -71,13 +71,26 @@ export default function SettingsPageClient({ session }) {
     const result = await changePassword(formData.current_password, formData.new_password);
 
     if (result.success) {
-      setMessage({ type: 'success', text: result.message || 'Password changed successfully!' });
+      
+      setMessage({ 
+        type: 'success', 
+        text: 'Password changed successfully! You will be logged out in 2 seconds...' 
+      });
+      
+      // Clear form
       setFormData(prev => ({
         ...prev,
         current_password: '',
         new_password: '',
         confirm_password: ''
       }));
+      
+      // If loggedOut flag is set, auto-redirect after 2 seconds
+      if (result.loggedOut) {
+        setTimeout(() => {
+          router.push('/login');
+        }, 2000);
+      }
     } else {
       setMessage({ type: 'error', text: result.error || 'Failed to change password' });
     }

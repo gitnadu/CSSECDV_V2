@@ -29,8 +29,7 @@ export default function FacultyView({ enrollments, sections }) {
     { value: '2.50', label: '2.50' },
     { value: '3.00', label: '3.00' },
     { value: '4.00', label: '4.00' },
-    { value: '5.00', label: '0.00 (Failure)' },
-    { value: 'INC', label: 'INC (Incomplete)' },
+    { value: '0.00', label: '0.00 (Failure)' }
   ];
 
   // Group enrollments by section and include all professor's sections (even with 0 enrollments)
