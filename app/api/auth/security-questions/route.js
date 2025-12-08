@@ -12,7 +12,7 @@ export async function GET(req) {
 
     return NextResponse.json({ questions: result.rows });
   } catch (error) {
-    console.error("[Auth] Get security questions error:", error);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -78,7 +78,7 @@ export async function POST(req) {
       message: "Security questions configured successfully" 
     });
   } catch (error) {
-    console.error("[Auth] Set security questions error:", error);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

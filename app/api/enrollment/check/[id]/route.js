@@ -30,7 +30,7 @@ export async function GET(req, { params }) {
 
     return NextResponse.json({ success: true, ...result });
   } catch (err) {
-    console.error("GET /api/enrollment/check/[id] error:", err);
+    console.error('ERROR');
     return NextResponse.json({ success: false, error: "Internal error" }, { status: 500 });
   }
 }

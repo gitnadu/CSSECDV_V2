@@ -17,7 +17,7 @@ export async function GET(req, { params }) {
 
     return NextResponse.json({ course: formatCourse(course) });
   } catch (err) {
-    console.error("[Course] GetCourseByCode error:", err);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

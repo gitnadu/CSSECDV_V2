@@ -27,7 +27,7 @@ export async function GET(req) {
 
     return NextResponse.json({ success: true, enrollments });
   } catch (err) {
-    console.error("GET /api/enrollment/me error:", err);
+    console.error('ERROR');
     return NextResponse.json(
       { success: false, error: "Internal error" },
       { status: 500 }

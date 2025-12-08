@@ -46,7 +46,7 @@ export async function GET(req) {
       offset,
     });
   } catch (error) {
-    console.error("[Audit] GET audit logs error:", error);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

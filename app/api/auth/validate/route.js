@@ -22,7 +22,7 @@ export async function POST(req) {
 
     return NextResponse.json({ valid: true, user });
   } catch (error) {
-    console.error("[Auth] ValidateToken error:", error);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

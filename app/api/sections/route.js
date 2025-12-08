@@ -8,7 +8,7 @@
       const sections = await SectionRepository.findAll();
       return NextResponse.json({ sections: sections.map(formatSection) });
     } catch (err) {
-      console.error("[Section] GetAllSections error:", err);
+      console.error('ERROR');
       return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
   }
@@ -63,7 +63,7 @@
       const sectionWithDetails = await SectionRepository.findById(section.id);
       return NextResponse.json({ section: formatSection(sectionWithDetails) }, { status: 201 });
     } catch (err) {
-      console.error("[Section] CreateSection error:", err);
+      console.error('ERROR');
       return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
     }
   }

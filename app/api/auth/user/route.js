@@ -18,7 +18,7 @@ export async function GET(req) {
 
     return NextResponse.json({ user });
   } catch (error) {
-    console.error("[Auth] GetUserById error:", error);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -119,7 +119,7 @@ export async function PUT(req) {
 
     return response;
   } catch (error) {
-    console.error("[Auth] UpdateUser error:", error);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

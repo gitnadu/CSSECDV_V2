@@ -52,7 +52,7 @@ export async function POST(req) {
       }))
     });
   } catch (error) {
-    console.error("[Auth] Get user security questions error:", error);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

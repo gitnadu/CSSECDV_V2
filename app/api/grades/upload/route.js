@@ -7,10 +7,8 @@ export async function POST(req) {
   try {
     const { enrollmentId, grade } = await req.json();
 
-    console.log("POST /api/grades/upload - received:", { enrollmentId, grade });
-
     if (!enrollmentId) {
-      console.error("Missing enrollmentId in request");
+      console.error('ERROR');
 
       return NextResponse.json({ error: "Missing enrollmentId" }, { status: 400 });
     }
@@ -43,8 +41,6 @@ export async function POST(req) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    console.log("Updating grade for enrollment:", enrollmentId, "to grade:", grade);
-
     // Update grade
     const updated = await EnrollmentRepository.updateGrade(enrollmentId, grade);
 
@@ -57,7 +53,7 @@ export async function POST(req) {
 
     return NextResponse.json({ success: true, enrollment: normalized });
   } catch (err) {
-    console.error("POST /api/grades/upload error:", err);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

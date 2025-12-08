@@ -38,7 +38,7 @@ export async function GET(req, { params }) {
       enrollments: result.rows 
     });
   } catch (error) {
-    console.error("[Admin] Get student enrollments error:", error);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -95,7 +95,7 @@ export async function DELETE(req, { params }) {
       success: true 
     });
   } catch (error) {
-    console.error("[Admin] Drop student error:", error);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

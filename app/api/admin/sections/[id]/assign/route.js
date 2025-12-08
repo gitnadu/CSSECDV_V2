@@ -54,7 +54,7 @@ export async function PATCH(req, { params }) {
       section: result.rows[0] 
     });
   } catch (error) {
-    console.error("[Admin] Assign professor error:", error);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

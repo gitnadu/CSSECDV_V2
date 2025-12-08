@@ -37,7 +37,7 @@ export async function GET(req) {
       user,
     });
   } catch (err) {
-    console.error("GET /api/auth/me failed:", err);
+    console.error('ERROR');
     return NextResponse.json(
       { success: false, error: "Internal error" },
       { status: 500 }

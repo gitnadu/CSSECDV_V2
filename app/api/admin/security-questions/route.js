@@ -32,7 +32,7 @@ export async function DELETE(req) {
       message: "Security questions reset successfully. User can now set new questions." 
     });
   } catch (error) {
-    console.error("[Admin] Reset security questions error:", error);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

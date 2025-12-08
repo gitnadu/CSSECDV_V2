@@ -13,7 +13,7 @@ export async function POST(req, { params }) {
 
     return NextResponse.json({ section: formatSection(updated) });
   } catch (err) {
-    console.error("[Section] Toggle error:", err);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

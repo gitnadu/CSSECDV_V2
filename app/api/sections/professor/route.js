@@ -8,7 +8,7 @@ export async function GET() {
     const sections = await SectionRepository.findByProfessorId(professorId);
     return NextResponse.json({ sections: sections.map(formatSection) });
   } catch (err) {
-    console.error("[Section] GetSectionsByProfessor error:", err);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

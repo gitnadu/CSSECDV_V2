@@ -30,7 +30,7 @@ export async function DELETE(req, { params }) {
 
     return NextResponse.json({ success: true, message: "Enrollment dropped" });
   } catch (err) {
-    console.error("DELETE /api/enrollment/[id] error:", err);
+    console.error('ERROR');
     return NextResponse.json({ success: false, error: "Internal error" }, { status: 500 });
   }
 }

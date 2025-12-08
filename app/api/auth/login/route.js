@@ -20,17 +20,16 @@ export async function POST(req) {
       return NextResponse.json({ error: "Invalid username and/or password" }, { status: 400 });
     }
 
-    console.log('[Auth] Received login attempt for username:', username);
     const user = await UserRepository.authenticate(username, password);
 
     if (!user) {
       // Log failed auth attempt
       try {
-
+        
         const logRes = await AuditLogService.logAuthFailure(req, username, 'Invalid credentials');
 
       } catch (e) {
-        console.error('[Auth] Error while logging auth failure:', e);
+        console.error('ERROR');
       }
 
       return NextResponse.json({ error: "Invalid username and/or password" }, { status: 401 });
@@ -39,9 +38,8 @@ export async function POST(req) {
     // Log successful auth
     try {
       const successLog = await AuditLogService.logAuthSuccess(req, user.id, user.username);
-      console.log('[Auth] logAuthSuccess result:', successLog ? (successLog.id || true) : false);
     } catch (e) {
-      console.error('[Auth] Error while logging auth success:', e);
+      console.error('ERROR');
     }
 
     const accessToken = generateAccessToken(user);

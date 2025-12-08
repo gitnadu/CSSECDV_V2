@@ -9,7 +9,7 @@ export async function GET(req, { params }) {
     const sections = await SectionRepository.findByCourseId(courseId);
     return NextResponse.json({ sections: sections.map(formatSection) });
   } catch (err) {
-    console.error("[Section] GetSectionsByCourse error:", err);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

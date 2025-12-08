@@ -8,7 +8,7 @@ export async function GET() {
     const courses = await CourseRepository.findAll();
     return NextResponse.json({ courses: courses.map(formatCourse) });
   } catch (err) {
-    console.error("[Course] GetAllCourses error:", err);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -52,7 +52,7 @@ export async function POST(req) {
 
     return NextResponse.json({ course: formatCourse(course) }, { status: 201 });
   } catch (err) {
-    console.error("[Course] CreateCourse error:", err);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

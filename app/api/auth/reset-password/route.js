@@ -114,7 +114,7 @@ export async function POST(req) {
       message: "Password reset successfully. You can now log in with your new password." 
     });
   } catch (error) {
-    console.error("[Auth] Reset password error:", error);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

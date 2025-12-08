@@ -20,7 +20,7 @@ export async function GET(req) {
     
     return NextResponse.json({ students });
   } catch (error) {
-    console.error("[Admin] Get students error:", error);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

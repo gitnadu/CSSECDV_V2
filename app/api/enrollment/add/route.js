@@ -65,7 +65,7 @@ export async function POST(req) {
 
     return NextResponse.json({ success: true, enrollment: enrichedEnrollment });
   } catch (err) {
-    console.error("Enroll error:", err);
+    console.error('ERROR');
     return NextResponse.json({ success: false, error: "Internal error" }, { status: 500 });
   }
 }

@@ -66,7 +66,7 @@ export async function PATCH(req, { params }) {
       user: result.rows[0] 
     });
   } catch (error) {
-    console.error("[Admin] Update user role error:", error);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

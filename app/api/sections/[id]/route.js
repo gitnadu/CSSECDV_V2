@@ -13,7 +13,7 @@ export async function GET(req, { params }) {
 
     return NextResponse.json({ section: formatSection(section) });
   } catch (err) {
-    console.error("[Section] GetSectionById error:", err);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

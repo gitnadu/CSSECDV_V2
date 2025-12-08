@@ -83,7 +83,7 @@ export async function POST(req, { params }) {
       enrollment: result.rows[0] 
     });
   } catch (error) {
-    console.error("[Admin] Enroll student error:", error);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

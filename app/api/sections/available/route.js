@@ -7,7 +7,7 @@ export async function GET() {
     const sections = await SectionRepository.findAvailable();
     return NextResponse.json({ sections: sections.map(formatSection) });
   } catch (err) {
-    console.error("[Section] GetAvailableSections error:", err);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
