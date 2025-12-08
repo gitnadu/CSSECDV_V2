@@ -74,8 +74,8 @@ class CourseService {
 
   async toggleSectionEnrollment(sectionId, isOpen) {
     try {
-      const data = await api.post(`/api/sections/${sectionId}/toggle`, {
-        is_open: isOpen,
+      const data = await api.post(`/api/sections/toggle`, {
+        is_open: isOpen, sectionId
       });
 
       return {

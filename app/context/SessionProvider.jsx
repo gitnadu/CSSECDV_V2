@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import AuthService from "@/services/authService";
 import CourseService from "@/services/courseService";
 import EnrollmentService from "@/services/enrollmentService";
+import GradeService from "@/services/gradeService";
 import { useRouter } from "next/navigation";
 
 const SessionContext = createContext();
@@ -26,7 +27,7 @@ export function SessionProvider({ children }) {
   const [sections, setSections] = useState([]);
   const [enrollments, setEnrollments] = useState([]);
 
-  const loadSectionsAndEnrollments = async () => {
+  const loadSectionsAndEnrollments = async (role) => {
   try {
     // fetch sections
     const sectionsRes = await CourseService.getAllSections();
@@ -38,7 +39,15 @@ export function SessionProvider({ children }) {
 
     // fetch my enrollments
 
-    const enrollmentsRes = await EnrollmentService.getMyEnrollments();
+    let enrollmentsRes;
+
+    if (role == 'student') {
+      enrollmentsRes = await EnrollmentService.getMyEnrollments(); // this gets the enrollment for the logged STUDENT
+    }else{
+      enrollmentsRes = await EnrollmentService.getMyEnrollmentsFaculty();
+      console.log("Faculty enrollments loaded");
+    }
+
     if (enrollmentsRes.success) {
       setEnrollments(enrollmentsRes.enrollments || []);
     }
@@ -57,13 +66,12 @@ export function SessionProvider({ children }) {
         const result = await AuthService.getCurrentUser();
 
         console.log("this is the result.user from auth")
-        console.log(result)
+        console.log(result.user.role)
+
         if (result.success) { // only run the following if the session is valid
           setSession(result.user);
           
-          await loadSectionsAndEnrollments(result.user);
-
-
+          await loadSectionsAndEnrollments(result.user.role); // load sections and enrollments after setting session
 
         } else {
           setSession(null);
@@ -92,29 +100,52 @@ export function SessionProvider({ children }) {
     return result;
   };
 
+  // ----- TOGGLE ENROLLMENT (faculty) -----
+  const toggleEnrollment = async (sectionId, isOpen) => {
+    const result = await CourseService.toggleSectionEnrollment(sectionId, isOpen);
+
+    console.log("Toggle enrollment result:", result.success);
+
+    if (result.success) {
+      // Update local sections state with the returned section
+      const updatedSection = result.section;
+      setSections((prev) => prev.map((s) => (s.id === updatedSection.id ? updatedSection : s)));
+    }
+
+    return result;
+  };
+
   // ----- DROP -----
   const drop = async (enrollmentId) => {
-    try {
-      const response = await fetch(`/api/enrollment/${enrollmentId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
+    const result = await EnrollmentService.dropEnrollment(enrollmentId);
 
-      const result = await response.json();
-
-      if (result.success) {
-        // Refresh enrollments and sections to sync counts
-        await loadSectionsAndEnrollments();
-      }
-
-      return result;
-    } catch (error) {
-      console.error('Drop course error:', error);
-      return {
-        success: false,
-        error: 'An error occurred while dropping the course'
-      };
+    if (result.success) {
+      // Refresh enrollments and sections to sync counts
+      await loadSectionsAndEnrollments(session?.role);
     }
+
+    return result;
+  };
+
+  // ----- UPLOAD GRADE (faculty) -----
+  const uploadGrade = async (enrollmentId, grade) => {
+    const result = await GradeService.uploadGrade(enrollmentId, grade);
+
+    if (result.success) {
+      // Update local enrollments list with the returned enrollment
+      const updatedEnrollment = result.enrollment;
+      setEnrollments((prev) =>
+        prev.map((e) => {
+          // Support both id and enrollment_id naming
+          if ((e.enrollment_id || e.id) === (updatedEnrollment.enrollment_id || updatedEnrollment.id)) {
+            return { ...e, ...updatedEnrollment };
+          }
+          return e;
+        })
+      );
+    }
+
+    return result;
   };
 
   // ----- LOGIN -----
@@ -152,6 +183,8 @@ export function SessionProvider({ children }) {
       }
     } catch (err) {
       setSession(null);
+      setSections(null);
+      setEnrollments(null);
       return { success: false, error: err?.message };
     } finally {
       setChecking(false);
@@ -172,6 +205,8 @@ export function SessionProvider({ children }) {
     setSections,
     enrollments,
     setEnrollments,
+    uploadGrade,
+    toggleEnrollment,
     isAuthenticated: !!session,
   };
 
