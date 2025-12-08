@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import EnrollmentRepository from "@/lib/enrollmentRepository";
-import { SectionRepository } from "@/lib/sectionRepository";
-import { verifyToken } from "@/lib/auth";
+import {EnrollmentRepository} from "lib/enrollmentRepository";
+import { SectionRepository } from "lib/sectionRepository";
+import { verifyToken } from "lib/auth";
 
 export async function DELETE(req) {
   try {
