@@ -76,75 +76,41 @@ class AuthService {
    */
    async changePassword (currentPassword, newPassword) {
     try {
-      const result = await AuthService.changePassword(currentPassword, newPassword);
-
-      if (!result.success) {
-        return result; // caller will show error
-      }
-
-      // Ensure server invalidates sessions/tokens (best practice).
-      // If your backend already invalidates on changePassword you can skip this,
-      // but calling logout ensures cookies are cleared client-side too.
-      try {
-        await AuthService.logout();
-      } catch (e) {
-        // still continue to client-side cleanup even if logout fails
-        console.warn("logout after pw change failed:", e);
-      }
-
-      // Clear sensitive client state
-      setSession(null);
-      setSections([]);
-      setEnrollments([]);
-      setFaculty([]);
-      setStudents([]);
-      setCourses([]);
-
-      // Clear any persisted client tokens/data (if used)
-      try {
-        localStorage.removeItem("someAuthTokenKey"); // adjust keys you use
-        sessionStorage.removeItem("someTempDataKey");
-      } catch (e) {
-        // ignore if storage not available
-      }
-
-      // Optionally clear/rotate any CSRF token stored in memory/storage here
-
-      // Inform user and force re-login
-      // (use your preferred toast/notification; simple alert for example)
-      // show success message then redirect
-      alert("Password changed. Please sign in again with your new password.");
-
-      router.push("/login");
-
-      // Return the original success result so caller can handle UI
-      return result;
-    } catch (err) {
-      console.error("changePassword error:", err);
-      return { success: false, error: err?.message || "Unknown error" };
-    }
-  };
-
-  /**
-   * Update user profile (first_name, last_name, email)
-   */
-  async updateProfile(profileData) {
-    try {
-      const data = await api.put("/api/auth/user", {
-        first_name: profileData.first_name,
-        last_name: profileData.last_name,
-        email: profileData.email,
+      const response = await api.put("/api/auth/user", { 
+        current_password: currentPassword, 
+        new_password: newPassword 
       });
 
       return {
         success: true,
-        user: data.user,
-        message: data.message || "Profile updated successfully",
+        message: response.message || "Password changed successfully"
       };
     } catch (err) {
+      console.error("AuthService.changePassword error:", err);
       return {
         success: false,
-        error: err.message || "Failed to update profile",
+        error: err.message || "Failed to change password"
+      };
+    }
+  }
+
+  /**
+   * Update user profile
+   */
+  async updateProfile(profileData) {
+    try {
+      const response = await api.put("/api/auth/user", profileData);
+
+      return {
+        success: true,
+        user: response.user,
+        message: response.message || "Profile updated successfully"
+      };
+    } catch (err) {
+      console.error("AuthService.updateProfile error:", err);
+      return {
+        success: false,
+        error: err.message || "Failed to update profile"
       };
     }
   }
