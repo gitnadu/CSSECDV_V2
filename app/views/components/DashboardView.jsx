@@ -34,6 +34,10 @@ export default function DashboardView({
     }
   };
 
+  const handleSettings = () => {
+    window.location.href = '/settings';
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">    
       <div className="max-w-6xl mx-auto">
@@ -46,12 +50,20 @@ export default function DashboardView({
                 : session.username || session.id} ({session.role})
             </p>          
             </div>
-          <Button 
-            onClick={logout} 
-            variant="outline"
-            className="bg-white shadow-md">
-            Logout
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={handleSettings} 
+              variant="outline"
+              className="bg-white shadow-md">
+              Settings
+            </Button>
+            <Button 
+              onClick={logout} 
+              variant="outline"
+              className="bg-white shadow-md">
+              Logout
+            </Button>
+          </div>
         </div>
 
         {message && (
