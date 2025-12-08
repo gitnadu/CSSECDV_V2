@@ -86,19 +86,36 @@ export function SessionProvider({ children }) {
     console.log("Enrollment result:", result.success);
 
     if (result.success) {
-      // update state so UI reactss
-      setEnrollments(prev => [...prev, result.enrollment]);
-
-      setSections(prev =>
-        prev.map(s =>
-          s.id === sectionId
-            ? { ...s, enrolled_count: s.enrolled_count + 1 }
-            : s
-        )
-      );
+      // Refresh enrollments to get full details
+      await loadSectionsAndEnrollments();
     }
 
     return result;
+  };
+
+  // ----- DROP -----
+  const drop = async (enrollmentId) => {
+    try {
+      const response = await fetch(`/api/enrollment/${enrollmentId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Refresh enrollments and sections to sync counts
+        await loadSectionsAndEnrollments();
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Drop course error:', error);
+      return {
+        success: false,
+        error: 'An error occurred while dropping the course'
+      };
+    }
   };
 
   // ----- LOGIN -----
@@ -151,6 +168,7 @@ export function SessionProvider({ children }) {
     logout,
     refreshSession,
     enroll,
+    drop,
     sections,
     setSections,
     enrollments,

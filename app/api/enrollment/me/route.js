@@ -23,7 +23,7 @@ export async function GET(req) {
       );
     }
 
-    const enrollments = await EnrollmentRepository.findByStudentId(payload.id);
+    const enrollments = await EnrollmentRepository.findByStudentIdWithDetails(payload.id);
 
     return NextResponse.json({ success: true, enrollments });
   } catch (err) {
