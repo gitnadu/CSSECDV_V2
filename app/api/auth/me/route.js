@@ -16,8 +16,6 @@ export async function GET(req) {
 
     const payload = await verifyToken(token);
 
-    console.log("Payload in /api/auth/me:", payload);
-
     if (!payload) {
       return NextResponse.json(
         { success: false, user: null },
@@ -26,8 +24,6 @@ export async function GET(req) {
     }
 
     const user = await UserRepository.findById(payload.id);
-
-    console.log("User in /api/auth/me:", user);
 
     if (!user) {
       return NextResponse.json(

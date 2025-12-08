@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyToken, generateAccessToken } from "@/lib/auth";
-import { UserRepository } from "@/lib/userRepository";
+import { UserRepository } from "lib/userRepository";
 
 export async function POST(req) {
   try {

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { query } from "@/lib/db";
+import { query } from "lib/db";
 import bcrypt from "bcryptjs";
 
 // Verify username and get security questions for password reset
@@ -37,6 +37,7 @@ export async function POST(req) {
     );
 
     if (questionsResult.rows.length === 0) {
+      
       return NextResponse.json({ 
         error: "Invalid credentials or security questions not configured" 
       }, { status: 404 });

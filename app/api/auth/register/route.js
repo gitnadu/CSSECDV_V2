@@ -1,7 +1,7 @@
 // app/api/auth/register/route.js
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/db";
-import { hashPassword } from "@/lib/auth";
+import { connectDB } from "lib/db";
+import { hashPassword } from "lib/auth";
 import { isValidEmail, isValidPassword } from "@/lib/validation";
 import mongoose from "mongoose";
 

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../..
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { Button } from '../../components/ui/button';
 import { useSession } from '@/context/SessionProvider';
+import AuditLogsView from './AuditLogsView';
 
 export default function AdminView({ session }) {
   const { faculty: ctxFaculty, students: ctxStudents, courses: ctxCourses, sections: ctxSections,
@@ -262,6 +263,7 @@ export default function AdminView({ session }) {
           <TabsTrigger value="students">Students ({students.length})</TabsTrigger>
           <TabsTrigger value="courses">Courses ({courses.length})</TabsTrigger>
           <TabsTrigger value="sections">Sections ({sections.length})</TabsTrigger>
+          <TabsTrigger value="audit">Audit Logs</TabsTrigger>
         </TabsList>
 
         <TabsContent value="faculty">
@@ -657,6 +659,10 @@ export default function AdminView({ session }) {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="audit">
+          <AuditLogsView session={session} />
         </TabsContent>
       </Tabs>
 

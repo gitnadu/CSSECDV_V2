@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { query } from "@/lib/db";
-import { verifyToken } from "@/lib/auth";
+import { query } from "lib/db";
+import { verifyToken } from "lib/auth";
 
 // DELETE - Reset security questions for a user (Admin only)
 export async function DELETE(req) {

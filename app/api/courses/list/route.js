@@ -1,6 +1,6 @@
 // app/api/courses/list/route.js
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/db";
+import { connectDB } from "lib/db";
 import mongoose from "mongoose";
 
 await connectDB();

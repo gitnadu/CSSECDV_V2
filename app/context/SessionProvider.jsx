@@ -7,6 +7,7 @@ import CourseService from "@/services/courseService";
 import EnrollmentService from "@/services/enrollmentService";
 import GradeService from "@/services/gradeService";
 import AdminService from '@/services/adminService';
+import AdminAuditService from '@/services/adminAuditService';
 import { useRouter } from "next/navigation";
 
 const SessionContext = createContext();
@@ -304,6 +305,23 @@ export function SessionProvider({ children }) {
     }
   };
 
+  // ----- AUDIT LOGS -----
+  const getAuditLogs = async (limit = 100, offset = 0, eventType = null) => {
+    try {
+      if (eventType) {
+        const res = await AdminAuditService.getAuditLogsByEventType(eventType, limit, offset);
+        if (process.env.NODE_ENV === 'development') console.log('[SessionProvider] getAuditLogs by eventType result:', eventType, res);
+        return res;
+      } else {
+        const res = await AdminAuditService.getAuditLogs(limit, offset);
+        if (process.env.NODE_ENV === 'development') console.log('[SessionProvider] getAuditLogs result:', res);
+        return res;
+      }
+    } catch (err) {
+      console.error('[SessionProvider] getAuditLogs error:', err);
+      return { success: false, logs: [], error: err?.message };
+    }
+  };
 
   const value = {
     session,
@@ -335,6 +353,8 @@ export function SessionProvider({ children }) {
     dropStudentEnrollment,
     // expose loader so components can ensure data is present after client-side navigation
     loadSectionsAndEnrollments,
+    // audit logs
+    getAuditLogs,
   };
 
   return (

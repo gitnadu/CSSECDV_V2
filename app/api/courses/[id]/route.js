@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { CourseRepository } from "@/lib/courseRepository";
-import { formatCourse } from "@/lib/formatters";
+import { CourseRepository } from "lib/courseRepository";
+import { formatCourse } from "lib/formatters";
 
 export async function GET(req, { params }) {
   const { id } = params;

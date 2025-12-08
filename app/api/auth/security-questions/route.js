@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { query } from "@/lib/db";
+import { query } from "lib/db";
 import bcrypt from "bcryptjs";
 
 // Get all available security questions

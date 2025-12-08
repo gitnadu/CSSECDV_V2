@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { query } from "@/lib/db";
+import { query } from "lib/db";
 import bcrypt from "bcryptjs";
 
 // Verify security answers and reset password
@@ -8,6 +8,9 @@ export async function POST(req) {
     const { username, answers, new_password } = await req.json();
 
     if (!username || !answers || !Array.isArray(answers) || !new_password) {
+
+      const logRes = await AuditLogService.logAuthFailure(req, username, 'Password reset failed - missing fields');
+
       return NextResponse.json({ 
         error: "Username, answers, and new password are required" 
       }, { status: 400 });
@@ -15,10 +18,14 @@ export async function POST(req) {
 
     // Validate new password
     if (new_password.length < 12) {
+
+      const logRes = await AuditLogService.logAuthFailure(req, username, 'Password reset failed - weak password');
+
       return NextResponse.json({ 
         error: "Password must be at least 12 characters long" 
       }, { status: 400 });
     }
+
 
     // Find user
     const userResult = await query(

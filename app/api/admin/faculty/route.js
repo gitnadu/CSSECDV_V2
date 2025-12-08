@@ -12,8 +12,8 @@ export async function GET(req) {
 
     const decoded = verifyToken(token);
 
-    if (!decoded || decoded.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 });
+    if (!decoded) {
+      return NextResponse.json({ error: "Forbidden Access" }, { status: 403 });
     }
 
     const faculty = await UserRepository.findByRole("faculty");
