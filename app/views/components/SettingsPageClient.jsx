@@ -23,12 +23,129 @@ export default function SettingsPageClient({ session }) {
   
   const [message, setMessage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [passwordErrors, setPasswordErrors] = useState([]);
+  const [passwordMatchError, setPasswordMatchError] = useState('');
+  const [currentPasswordError, setCurrentPasswordError] = useState('');
+
+  const validatePassword = (password) => {
+    const errors = [];
+    
+    // Length requirement (minimum 12 characters for strong security)
+    if (password.length < 12) {
+      errors.push('Password must be at least 12 characters long');
+    }
+    
+    // Maximum length check
+    if (password.length > 128) {
+      errors.push('Password must not exceed 128 characters');
+    }
+    
+    // Uppercase letter requirement
+    if (!/[A-Z]/.test(password)) {
+      errors.push('Password must contain at least one uppercase letter (A-Z)');
+    }
+    
+    // Lowercase letter requirement
+    if (!/[a-z]/.test(password)) {
+      errors.push('Password must contain at least one lowercase letter (a-z)');
+    }
+    
+    // Number requirement
+    if (!/[0-9]/.test(password)) {
+      errors.push('Password must contain at least one number (0-9)');
+    }
+    
+    // Special character requirement
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      errors.push('Password must contain at least one special character (!@#$%^&*()_+-=[]{};\':"|,.<>/?)');
+    }
+    
+    // Check for common patterns
+    if (/^(?:password|12345678|qwerty|abc123)/i.test(password)) {
+      errors.push('Password contains common patterns and is too weak');
+    }
+    
+    // Check for sequential characters
+    if (/(012|123|234|345|456|567|678|789|abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz)/i.test(password)) {
+      errors.push('Password should not contain sequential characters');
+    }
+    
+    return errors;
+  };
+
+  const calculatePasswordStrength = (password) => {
+    if (!password) return { score: 0, label: '', color: '' };
+    
+    let score = 0;
+    
+    // Length scoring (0-30 points)
+    if (password.length >= 8) score += 10;
+    if (password.length >= 12) score += 10;
+    if (password.length >= 16) score += 10;
+    
+    // Character variety (0-40 points)
+    if (/[a-z]/.test(password)) score += 10;
+    if (/[A-Z]/.test(password)) score += 10;
+    if (/[0-9]/.test(password)) score += 10;
+    if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) score += 10;
+    
+    // Complexity bonus (0-20 points)
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score += 5;
+    if (/[0-9]/.test(password) && /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) score += 5;
+    if (password.length >= 12 && /[a-z]/.test(password) && /[A-Z]/.test(password) && /[0-9]/.test(password) && /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) score += 10;
+    
+    // Penalty for common patterns (-20 points)
+    if (/^(?:password|12345678|qwerty|abc123)/i.test(password)) score -= 20;
+    if (/(012|123|234|345|456|567|678|789|abc|bcd|cde|def)/i.test(password)) score -= 10;
+    
+    // Ensure score is between 0-100
+    score = Math.max(0, Math.min(100, score));
+    
+    // Determine strength label and color
+    if (score < 30) {
+      return { score, label: 'Weak', color: 'bg-red-500', textColor: 'text-red-600' };
+    } else if (score < 60) {
+      return { score, label: 'Fair', color: 'bg-yellow-500', textColor: 'text-yellow-600' };
+    } else if (score < 80) {
+      return { score, label: 'Good', color: 'bg-blue-500', textColor: 'text-blue-600' };
+    } else {
+      return { score, label: 'Strong', color: 'bg-green-500', textColor: 'text-green-600' };
+    }
+  };
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: value
     });
+    
+    // Clear current password error when user starts typing
+    if (name === 'current_password' && currentPasswordError) {
+      setCurrentPasswordError('');
+      setMessage(null);
+    }
+    
+    // Real-time password validation
+    if (name === 'new_password') {
+      const errors = validatePassword(value);
+      setPasswordErrors(errors);
+      // Check if confirm password matches when new password changes
+      if (formData.confirm_password && value !== formData.confirm_password) {
+        setPasswordMatchError('Passwords do not match');
+      } else {
+        setPasswordMatchError('');
+      }
+    }
+    
+    // Real-time password match validation
+    if (name === 'confirm_password') {
+      if (value && formData.new_password !== value) {
+        setPasswordMatchError('Passwords do not match');
+      } else {
+        setPasswordMatchError('');
+      }
+    }
   };
 
   const handleUpdateProfile = async (e) => {
@@ -57,13 +174,16 @@ export default function SettingsPageClient({ session }) {
     setMessage(null);
 
     if (formData.new_password !== formData.confirm_password) {
-      setMessage({ type: 'error', text: 'New passwords do not match' });
+      setPasswordMatchError('Passwords do not match');
       setLoading(false);
       return;
     }
 
-    if (formData.new_password.length < 8) {
-      setMessage({ type: 'error', text: 'Password must be at least 8 characters long' });
+    // Validate password complexity
+    const errors = validatePassword(formData.new_password);
+    if (errors.length > 0) {
+      setMessage({ type: 'error', text: 'Password does not meet complexity requirements' });
+      setPasswordErrors(errors);
       setLoading(false);
       return;
     }
@@ -78,8 +198,18 @@ export default function SettingsPageClient({ session }) {
         new_password: '',
         confirm_password: ''
       }));
+      setPasswordErrors([]);
+      setPasswordMatchError('');
+      setCurrentPasswordError('');
     } else {
-      setMessage({ type: 'error', text: result.error || 'Failed to change password' });
+      // Check if error is about incorrect current password
+      const errorMsg = result.error || 'Failed to change password';
+      if (errorMsg.toLowerCase().includes('incorrect') || errorMsg.toLowerCase().includes('current password')) {
+        setCurrentPasswordError(errorMsg);
+        setMessage({ type: 'error', text: 'Password change failed. Please check the error below.' });
+      } else {
+        setMessage({ type: 'error', text: errorMsg });
+      }
     }
     setLoading(false);
   };
@@ -206,7 +336,14 @@ export default function SettingsPageClient({ session }) {
                     onChange={handleChange}
                     placeholder="Enter current password"
                     required
+                    className={currentPasswordError ? 'border-red-500' : ''}
                   />
+                  {currentPasswordError && (
+                    <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
+                      <p className="text-xs font-medium text-red-800">⚠ {currentPasswordError}</p>
+                      <p className="text-xs text-red-700 mt-1">Your existing password remains active. Please enter the correct current password to proceed.</p>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -219,8 +356,57 @@ export default function SettingsPageClient({ session }) {
                     onChange={handleChange}
                     placeholder="Enter new password"
                     required
+                    className={passwordErrors.length > 0 && formData.new_password ? 'border-red-500' : ''}
                   />
-                  <p className="text-xs text-gray-500 mt-1">Must be at least 8 characters long</p>
+                  {formData.new_password && (
+                    <div className="mt-2">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs font-medium text-gray-700">Password Strength:</span>
+                        <span className={`text-xs font-bold ${calculatePasswordStrength(formData.new_password).textColor}`}>
+                          {calculatePasswordStrength(formData.new_password).label}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2.5">
+                        <div
+                          className={`h-2.5 rounded-full transition-all duration-300 ${calculatePasswordStrength(formData.new_password).color}`}
+                          style={{ width: `${calculatePasswordStrength(formData.new_password).score}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  <div className="mt-2 space-y-1">
+                    <p className="text-xs font-medium text-gray-700">Password must contain:</p>
+                    <ul className="text-xs space-y-0.5 ml-4">
+                      <li className={formData.new_password.length >= 12 ? 'text-green-600' : 'text-gray-600'}>
+                        • At least 12 characters
+                      </li>
+                      <li className={/[A-Z]/.test(formData.new_password) ? 'text-green-600' : 'text-gray-600'}>
+                        • At least one uppercase letter (A-Z)
+                      </li>
+                      <li className={/[a-z]/.test(formData.new_password) ? 'text-green-600' : 'text-gray-600'}>
+                        • At least one lowercase letter (a-z)
+                      </li>
+                      <li className={/[0-9]/.test(formData.new_password) ? 'text-green-600' : 'text-gray-600'}>
+                        • At least one number (0-9)
+                      </li>
+                      <li className={/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(formData.new_password) ? 'text-green-600' : 'text-gray-600'}>
+                        • At least one special character (!@#$%^&*...)
+                      </li>
+                      <li className={!/(012|123|234|345|456|567|678|789|abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz)/i.test(formData.new_password) && formData.new_password ? 'text-green-600' : 'text-gray-600'}>
+                        • No sequential characters
+                      </li>
+                    </ul>
+                    {passwordErrors.length > 0 && formData.new_password && (
+                      <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
+                        <p className="text-xs font-medium text-red-800 mb-1">Issues found:</p>
+                        <ul className="text-xs text-red-700 space-y-0.5 ml-4">
+                          {passwordErrors.map((error, index) => (
+                            <li key={index}>• {error}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -233,7 +419,11 @@ export default function SettingsPageClient({ session }) {
                     onChange={handleChange}
                     placeholder="Confirm new password"
                     required
+                    className={passwordMatchError && formData.confirm_password ? 'border-red-500' : ''}
                   />
+                  {passwordMatchError && formData.confirm_password && (
+                    <p className="text-red-500 text-xs mt-1">{passwordMatchError}</p>
+                  )}
                 </div>
                 <Button type="submit" disabled={loading}>
                   {loading ? 'Changing...' : 'Change Password'}
