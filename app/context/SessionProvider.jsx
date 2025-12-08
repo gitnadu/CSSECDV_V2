@@ -2,13 +2,12 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import AuthService from "@/services/authService";
+import EnrollmentService from "@/services/enrollmentService";
 import { useRouter } from "next/navigation";
 
 const SessionContext = createContext();
 
 export function useSession() {
-
-
 
   const ctx = useContext(SessionContext);
   if (!ctx) throw new Error("useSession must be used within SessionProvider");
@@ -43,10 +42,19 @@ export function SessionProvider({ children }) {
     loadSession();
   }, []);
 
+  // ----- ENROLL -----
+  const enroll = async (sectionId) => {
+    try {
+      await EnrollmentService.enrollInSection(sectionId);  // enroll on a section, user the session userId
+    } finally {
+      router.push("/login");
+    }
+  };
+
   // ----- LOGIN -----
   const login = async (username, password) => {
     const result = await AuthService.login(username, password);
-    console.log("result from AuthService:", result);
+
     if (result.success) {
       // Backend sets HttpOnly cookie; just store user object
       setSession(result.user);

@@ -8,7 +8,7 @@ import { Button } from '../../components/ui/button';
  * Now shows SECTIONS (concrete) instead of courses (abstract)
  * Each section has: course code, section name, professor, capacity (max 5)
  */
-export default function CoursesView({ sections, userRole, onEnroll, enrolledSectionIds = [] }) {
+export default function CoursesView({ sections, userRole, enroll, enrolledSectionIds = [] }) {
   // Group sections by course for better organization
   const sectionsByCourse = sections.reduce((acc, section) => {
     const courseCode = section.course_code;
@@ -70,7 +70,7 @@ export default function CoursesView({ sections, userRole, onEnroll, enrolledSect
                       </div>
                       {userRole === 'student' && !isEnrolled && (
                         <Button
-                          onClick={() => onEnroll(section.id)}
+                          onClick={() => enroll(section.id)}
                           disabled={!canEnroll}
                           className="w-full mt-2"
                           size="sm"

@@ -14,7 +14,13 @@ export default async function DashboardPage() {
 
   const sessionValue = session?.value || "";
 
+  console.log("Session cookie value:", session);
+
   const decodedSession = await verifyToken(sessionValue);
+
+  console.log("Decoded cookie value:", decodedSession);
+  console.log("Session value:", sessionValue);
+
   if (!decodedSession) redirect("/login");
 
   // attach cookie by value, not object
