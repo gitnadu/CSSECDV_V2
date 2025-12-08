@@ -313,13 +313,13 @@ export default function SettingsPageClient({ session }) {
         }, 2000);
       }
     } else {
-      // Check if error is about password verification or password age
+      // Check if error is about password verification, password age, or password re-use
       const errorMsg = result.error || 'Failed to change password';
       if (errorMsg.toLowerCase().includes('verify') || errorMsg.toLowerCase().includes('current password')) {
         setCurrentPasswordError('Unable to verify current password');
         setMessage({ type: 'error', text: 'Password change failed. Please verify your current password and try again.' });
-      } else if (errorMsg.toLowerCase().includes('one day old') || errorMsg.toLowerCase().includes('wait')) {
-        // Password age policy error - display in the password policy banner
+      } else if (errorMsg.toLowerCase().includes('one day old') || errorMsg.toLowerCase().includes('wait') || errorMsg.toLowerCase().includes('used recently') || errorMsg.toLowerCase().includes('password re-use')) {
+        // Password age policy or password re-use error - display in the password policy banner
         setPasswordAgeError(errorMsg);
       } else {
         setMessage({ type: 'error', text: errorMsg });
@@ -440,7 +440,13 @@ export default function SettingsPageClient({ session }) {
                 {passwordAgeError ? (
                   <p className="text-red-800"><strong>⚠ {passwordAgeError}</strong></p>
                 ) : (
-                  <p className="text-blue-800"><strong>Password Policy:</strong> For security reasons, passwords must be at least one day old before they can be changed.</p>
+                  <div className="text-blue-800">
+                    <p className="mb-1"><strong>Password Policy:</strong></p>
+                    <ul className="list-disc list-inside space-y-1 ml-2">
+                      <li>Passwords must be at least one day old before they can be changed</li>
+                      <li>Cannot reuse any of your last 5 passwords</li>
+                    </ul>
+                  </div>
                 )}
               </div>
             </CardHeader>

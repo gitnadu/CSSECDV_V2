@@ -72,6 +72,14 @@ export async function PUT(req) {
         return NextResponse.json({ error: "Password must be at least 8 characters long" }, { status: 400 });
       }
 
+      // Check password history to prevent re-use (last 5 passwords)
+      const isPasswordReused = await UserRepository.checkPasswordHistory(userId, new_password, 5);
+      if (isPasswordReused) {
+        return NextResponse.json({ 
+          error: "This password has been used recently. Please choose a different password." 
+        }, { status: 400 });
+      }
+
       // Update password
       await UserRepository.update(userId, { password: new_password });
       return NextResponse.json({ message: "Password updated successfully" });

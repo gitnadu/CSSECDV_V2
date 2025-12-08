@@ -74,8 +74,34 @@ export async function POST(req) {
       }
     }
 
+    // Check password history to prevent re-use (last 5 passwords)
+    const historyResult = await query(
+      `SELECT password_hash FROM password_history 
+       WHERE user_id = $1 
+       ORDER BY created_at DESC 
+       LIMIT 5`,
+      [userId]
+    );
+
+    for (const row of historyResult.rows) {
+      const isMatch = await bcrypt.compare(new_password, row.password_hash);
+      if (isMatch) {
+        return NextResponse.json({ 
+          error: "This password has been used recently. Please choose a different password." 
+        }, { status: 400 });
+      }
+    }
+
     // All answers verified - update password
     const passwordHash = await bcrypt.hash(new_password, 10);
+    
+    // Store new password in history
+    await query(
+      `INSERT INTO password_history (user_id, password_hash, created_at) 
+       VALUES ($1, $2, CURRENT_TIMESTAMP)`,
+      [userId, passwordHash]
+    );
+    
     await query(
       `UPDATE users 
        SET password_hash = $1, password_changed_at = CURRENT_TIMESTAMP 
