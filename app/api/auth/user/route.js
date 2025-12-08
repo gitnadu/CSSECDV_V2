@@ -49,9 +49,22 @@ export async function PUT(req) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
       }
 
+      // Check if password is at least one day old (minimum password age policy)
+      if (user.password_changed_at) {
+        const passwordAge = Date.now() - new Date(user.password_changed_at).getTime();
+        const oneDayInMs = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+        
+        if (passwordAge < oneDayInMs) {
+          const hoursRemaining = Math.ceil((oneDayInMs - passwordAge) / (60 * 60 * 1000));
+          return NextResponse.json({ 
+            error: `Password must be at least one day old before it can be changed. Please wait ${hoursRemaining} more hour(s).` 
+          }, { status: 400 });
+        }
+      }
+
       const isValidPassword = await bcrypt.compare(current_password, user.password_hash);
       if (!isValidPassword) {
-        return NextResponse.json({ error: "Current password is incorrect" }, { status: 400 });
+        return NextResponse.json({ error: "Password change failed. Please verify your current password and try again." }, { status: 400 });
       }
 
       // Validate new password
