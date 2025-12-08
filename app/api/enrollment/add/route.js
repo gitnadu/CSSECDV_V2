@@ -22,20 +22,34 @@ export async function POST(req) {
 
     const userId = payload.id;
 
+    // Get the course_id for this section
+    const courseId = await SectionRepository.getCourseId(sectionId);
+    if (!courseId) {
+      return NextResponse.json(
+        { success: false, error: "Section not found" },
+        { status: 404 }
+      );
+    }
+
+    // Check if student has already enrolled in ANY section of this course
+    const courseHistory = await EnrollmentRepository.checkStudentCourseHistory(
+      userId,
+      courseId,
+      SectionRepository.findByCourseId
+    );
+
+    if (courseHistory.hasRecord) {
+      return NextResponse.json(
+        { success: false, error: "You are already enrolled in a section of this course" },
+        { status: 400 }
+      );
+    }
+
     // Check capacity
     const hasCapacity = await SectionRepository.hasAvailableCapacity(sectionId);
     if (!hasCapacity) {
       return NextResponse.json(
         { success: false, error: "Section is full" },
-        { status: 400 }
-      );
-    }
-
-    // Check if already enrolled
-    const existing = await EnrollmentRepository.findByStudentAndSection(userId, sectionId);
-    if (existing) {
-      return NextResponse.json(
-        { success: false, error: "Already enrolled in this section" },
         { status: 400 }
       );
     }
@@ -46,7 +60,10 @@ export async function POST(req) {
     // Increment section enrollment count
     await SectionRepository.incrementEnrollment(sectionId);
 
-    return NextResponse.json({ success: true, enrollment });
+    // Fetch the enrollment with full details (course, section, professor info)
+    const enrichedEnrollment = await EnrollmentRepository.findByIdWithDetails(enrollment.id);
+
+    return NextResponse.json({ success: true, enrollment: enrichedEnrollment });
   } catch (err) {
     console.error("Enroll error:", err);
     return NextResponse.json({ success: false, error: "Internal error" }, { status: 500 });

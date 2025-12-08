@@ -17,6 +17,7 @@ export default function CoursesView({userRole}) {
   const [error, setError] = useState("");
 
   const enrolledSectionIds = enrollments.map(e => e.section_id);
+  const enrolledCourseIds = enrollments.map(e => e.course_id);
 
   const handleEnroll = async (sectionId) => {
     setError("");
@@ -44,6 +45,7 @@ export default function CoursesView({userRole}) {
     if (!acc[courseCode]) {
       acc[courseCode] = {
         course_name: section.course_name,
+        course_id: section.course_id,
         sections: []
       };
     }
@@ -63,8 +65,9 @@ export default function CoursesView({userRole}) {
 
               const isFull = section.enrolled_count >= section.capacity;
               const isEnrolled = enrolledSectionIds.includes(section.id);
+              const isEnrolledInCourse = enrolledCourseIds.includes(section.course_id);
               const isClosed = section.is_open === false;
-              const canEnroll = !isFull && !isClosed && !isEnrolled;
+              const canEnroll = !isFull && !isClosed && !isEnrolledInCourse;
 
               return (
                 <Card key={section.id} className={isEnrolled ? 'border-green-500 border-2' : isClosed ? 'border-red-300 border-2 bg-gray-50' : ''}>
@@ -111,7 +114,9 @@ export default function CoursesView({userRole}) {
                               ? 'Closed'
                               : isFull 
                                 ? 'Full'
-                                : 'Enroll'}
+                                : isEnrolledInCourse
+                                  ? 'Already in Course'
+                                  : 'Enroll'}
                         </Button>
                       )}
                     </div>

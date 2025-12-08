@@ -11,18 +11,28 @@ import { useSession  } from "@/context/SessionProvider";
 
 export default function DashboardView({
   session, // decoded session object
-  //onEnroll, -> replaced with enroll
-  onDrop,
   onUploadGrade,
   onToggleEnrollment,
   message
 }) {
 
-  const { logout, enrollments, sections } = useSession();
+  const { logout, enrollments, sections, drop } = useSession();
 
   console.log("session "+ session)
   // Get section IDs that the student is already enrolled in
   const enrolledSectionIds = enrollments.map(e => e.section_id);
+
+  const handleDrop = async (enrollmentId) => {
+    if (!confirm('Are you sure you want to drop this course?')) {
+      return;
+    }
+
+    const result = await drop(enrollmentId);
+
+    if (!result.success) {
+      alert(result.error || 'Failed to drop course');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">    
@@ -67,7 +77,7 @@ export default function DashboardView({
             <TabsContent value="grades">
               <GradesView
                 enrollments={enrollments}
-                onDrop={onDrop}
+                onDrop={handleDrop}
               />
             </TabsContent>
           </Tabs>

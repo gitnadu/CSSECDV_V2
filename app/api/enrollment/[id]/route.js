@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import EnrollmentRepository from "@/lib/enrollmentRepository";
-import SectionRepository from "@/lib/sectionRepository";
-import { verifyToken } from "@/lib/auth";
+import { EnrollmentRepository } from "lib/enrollmentRepository";
+import { SectionRepository } from "lib/sectionRepository";
+import { verifyToken } from "lib/auth";
 
 export async function DELETE(req, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // Extract userId from JWT token in session cookie
     const token = req.cookies.get("session")?.value;

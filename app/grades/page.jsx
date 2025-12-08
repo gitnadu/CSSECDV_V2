@@ -1,4 +1,4 @@
-import GradesView from "@/views/components/GradesView";
+import GradesPageClient from "./GradesPageClient";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -10,17 +10,18 @@ export default async function GradesPage() {
     redirect("/login");
   }
 
-  const { id: studentId } = JSON.parse(decodeURIComponent(session.value));
-
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/grades/student/${studentId}`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/enrollment/me`,
     {
       cache: "no-store",
       credentials: "include",
+      headers: {
+        Cookie: `session=${session.value}`,
+      },
     }
   );
 
-  const grades = await res.json();
+  const data = await res.json();
 
-  return <GradesView grades={grades.grades || []} />;
+  return <GradesPageClient initialEnrollments={data.enrollments || []} />;
 }
