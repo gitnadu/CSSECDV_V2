@@ -238,6 +238,8 @@ export function SessionProvider({ children }) {
     if (result.success) {
       // Backend sets HttpOnly cookie; just store user object
       setSession(result.user);
+      // Load sections and enrollments after login
+      await loadSectionsAndEnrollments(result.user.role);
     }
     return result;
   };

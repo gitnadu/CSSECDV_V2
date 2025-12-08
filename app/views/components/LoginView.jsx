@@ -72,6 +72,14 @@ export default function LoginView() {
             >
               {loading ? 'Logging in...' : 'Login'}
             </Button>
+            <div className="text-center">
+              <a 
+                href="/forgot-password" 
+                className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+              >
+                Forgot Password?
+              </a>
+            </div>
             {/* <div className="text-sm text-gray-600 mt-4 bg-gray-50 rounded p-3">
               <p className="font-semibold mb-2">Test Accounts:</p>
               <p>👤 Student: <code className="bg-white px-1">student1</code> / <code className="bg-white px-1">pass123</code></p>

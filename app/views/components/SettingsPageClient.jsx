@@ -12,6 +12,99 @@ export default function SettingsPageClient({ session }) {
     const { updateProfile, changePassword } = useSession();
   
   const router = routerNav;
+
+  React.useEffect(() => {
+    loadSecurityQuestions();
+  }, []);
+
+  const loadSecurityQuestions = async () => {
+    try {
+      // Load available questions
+      const questionsRes = await fetch('/api/auth/security-questions', {
+        credentials: 'include'
+      });
+      if (questionsRes.ok) {
+        const data = await questionsRes.json();
+        setAvailableQuestions(data.questions || []);
+      }
+
+      // Load user's configured questions
+      const userQuestionsRes = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: session.username }),
+        credentials: 'include'
+      });
+      if (userQuestionsRes.ok) {
+        const data = await userQuestionsRes.json();
+        if (data.success) {
+          setUserSecurityQuestions(data.questions || []);
+        }
+      }
+    } catch (err) {
+      console.error('Error loading security questions:', err);
+    }
+  };
+
+  const handleSetupSecurityQuestions = async (e) => {
+    e.preventDefault();
+    setMessage(null);
+
+    // Validate at least 3 questions are answered
+    const answeredQuestions = Object.keys(securityAnswers).filter(
+      id => securityAnswers[id] && securityAnswers[id].trim().length >= 2
+    );
+
+    if (answeredQuestions.length < 3) {
+      setSecurityError('Please answer at least 3 security questions');
+      return;
+    }
+
+    // Show confirmation dialog
+    setShowSecurityConfirmation(true);
+  };
+
+  const confirmSetupSecurityQuestions = async () => {
+    setSecurityLoading(true);
+    setShowSecurityConfirmation(false);
+
+    try {
+      const answeredQuestions = Object.keys(securityAnswers).filter(
+        id => securityAnswers[id] && securityAnswers[id].trim().length >= 2
+      );
+
+      const answers = answeredQuestions.map(questionId => ({
+        question_id: parseInt(questionId),
+        answer_text: securityAnswers[questionId]
+      }));
+
+      const response = await fetch('/api/auth/security-questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: session.username,
+          answers
+        }),
+        credentials: 'include'
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to set security questions');
+      }
+
+      setMessage({ type: 'success', text: data.message });
+      setShowSecuritySetup(false);
+      setSecurityAnswers({});
+      setSecurityError('');
+      await loadSecurityQuestions();
+    } catch (err) {
+      setSecurityError(err.message);
+    } finally {
+      setSecurityLoading(false);
+    }
+  };
   const [formData, setFormData] = useState({
     first_name: session.first_name || '',
     last_name: session.last_name || '',
@@ -27,6 +120,13 @@ export default function SettingsPageClient({ session }) {
   const [passwordMatchError, setPasswordMatchError] = useState('');
   const [currentPasswordError, setCurrentPasswordError] = useState('');
   const [passwordAgeError, setPasswordAgeError] = useState('');
+  const [availableQuestions, setAvailableQuestions] = useState([]);
+  const [userSecurityQuestions, setUserSecurityQuestions] = useState([]);
+  const [securityAnswers, setSecurityAnswers] = useState({});
+  const [showSecuritySetup, setShowSecuritySetup] = useState(false);
+  const [securityLoading, setSecurityLoading] = useState(false);
+  const [securityError, setSecurityError] = useState('');
+  const [showSecurityConfirmation, setShowSecurityConfirmation] = useState(false);
 
   const validatePassword = (password) => {
     const errors = [];
@@ -443,8 +543,141 @@ export default function SettingsPageClient({ session }) {
               </form>
             </CardContent>
           </Card>
+
+          {/* Security Questions Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Security Questions</CardTitle>
+              <CardDescription>
+                {userSecurityQuestions.length > 0
+                  ? 'Your security questions are configured for password recovery'
+                  : 'Set up security questions to recover your password if you forget it'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {userSecurityQuestions.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="p-3 bg-green-50 border border-green-200 rounded">
+                    <p className="text-sm text-green-800">
+                      ✓ You have {userSecurityQuestions.length} security questions configured
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-gray-700">Your security questions:</p>
+                    <ul className="text-sm text-gray-600 space-y-1 ml-4">
+                      {userSecurityQuestions.map((q, index) => (
+                        <li key={q.id}>• {q.question_text}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded">
+                    <p className="text-xs text-blue-800">
+                      <strong>Note:</strong> Security questions cannot be changed once set. If you need to update them, please contact an administrator.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {!showSecuritySetup ? (
+                    <div className="space-y-4">
+                      <div className="p-3 bg-yellow-50 border border-yellow-200 rounded">
+                        <p className="text-sm text-yellow-800">
+                          ⚠ No security questions configured. Set them up now to enable password recovery.
+                        </p>
+                      </div>
+                      <Button onClick={() => setShowSecuritySetup(true)}>
+                        Set Up Security Questions
+                      </Button>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleSetupSecurityQuestions} className="space-y-4">
+                      <div className={`p-3 rounded text-xs ${securityError ? 'bg-red-50 border border-red-200' : 'bg-blue-50 border border-blue-200'}`}>
+                        {securityError ? (
+                          <p className="text-red-800">
+                            <strong>⚠ Error:</strong> {securityError}
+                          </p>
+                        ) : (
+                          <p className="text-blue-800">
+                            <strong>Important:</strong> Choose questions with answers only you would know. Answer at least 3 questions. Your answers are case-insensitive.
+                          </p>
+                        )}
+                      </div>
+                      <div className="space-y-4">
+                        {availableQuestions.map((q) => (
+                          <div key={q.id}>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              {q.question_text}
+                            </label>
+                            <Input
+                              type="text"
+                              value={securityAnswers[q.id] || ''}
+                              onChange={(e) =>
+                                setSecurityAnswers({
+                                  ...securityAnswers,
+                                  [q.id]: e.target.value
+                                })
+                              }
+                              placeholder="Your answer (optional)"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button type="submit" disabled={securityLoading} className="flex-1">
+                          {securityLoading ? 'Saving...' : 'Save Security Questions'}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            setShowSecuritySetup(false);
+                            setSecurityAnswers({});
+                            setSecurityError('');
+                            setShowSecurityConfirmation(false);
+                          }}
+                          className="flex-1"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </form>
+                  )}
+                </div>
+              )}  
+            </CardContent>
+          </Card>
         </div>
       </div>
+
+      {/* Security Questions Confirmation Dialog */}
+      {showSecurityConfirmation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Confirm Security Questions</h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Are you sure you want to set these security questions? You cannot change them again later. These questions will be used to recover your password if you forget it.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowSecurityConfirmation(false)}
+                disabled={securityLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={confirmSetupSecurityQuestions}
+                disabled={securityLoading}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {securityLoading ? 'Setting...' : 'Confirm'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
