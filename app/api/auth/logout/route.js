@@ -1,21 +1,40 @@
 import { NextResponse } from "next/server";
-import { verifyToken } from "@/lib/auth";
-import { UserRepository } from "@/lib/userRepository";
+import { verifyToken } from "lib/auth";
+import { UserRepository } from "lib/userRepository";
 
 export async function POST(req) {
   try {
-    const { refresh_token } = await req.json();
-    if (!refresh_token) return NextResponse.json({ success: true });
+    const refreshToken = req.cookies.get("refresh_token")?.value;
 
-    const decoded = verifyToken(refresh_token);
-
-    if (decoded) {
-      await UserRepository.revokeRefreshToken(decoded.id, refresh_token);
+    if (refreshToken) {
+      const decoded = verifyToken(refreshToken);
+      if (decoded?.id) {
+        await UserRepository.revokeRefreshToken(decoded.id, refreshToken);
+      }
     }
 
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("[Auth] Logout error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    // === Clear cookies ===
+    const res = NextResponse.json({ success: true });
+
+    res.cookies.set("refresh_token", "", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      path: "/",
+      maxAge: 0,
+    });
+
+    res.cookies.set("session", "", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      path: "/",
+      maxAge: 0,
+    });
+
+    return res;
+  } catch (err) {
+    console.error("[Logout] error:", err);
+    return NextResponse.json({ success: false, error: "Logout failed" }, { status: 500 });
   }
 }

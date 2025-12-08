@@ -2,6 +2,7 @@ import DashboardView from "@/views/components/DashboardView";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { verifyToken } from "lib/auth";
+import { useSession} from "@/context/SessionProvider";
 
 export default async function DashboardPage() {
   const cookieStore = await cookies(); // no await needed, cookies() is sync in app router

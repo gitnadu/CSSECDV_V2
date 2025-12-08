@@ -6,10 +6,11 @@ import { Alert, AlertDescription } from '../../components/ui/alert';
 import CoursesView from './CoursesView';
 import GradesView from './GradesView';
 import FacultyView from './FacultyView';
+import { useSession  } from "@/context/SessionProvider";
+
 
 export default function DashboardView({
   session,
-  onLogout,
   sections,
   enrollments,
   onEnroll,
@@ -20,6 +21,8 @@ export default function DashboardView({
 }) {
   // Get section IDs that the student is already enrolled in
   const enrolledSectionIds = enrollments.map(e => e.section_id);
+  const { logout } = useSession();
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">    
       <div className="max-w-6xl mx-auto">
@@ -33,7 +36,7 @@ export default function DashboardView({
             </p>          
             </div>
           <Button 
-            onClick={onLogout} 
+            onClick={logout} 
             variant="outline"
             className="bg-white shadow-md">
             Logout

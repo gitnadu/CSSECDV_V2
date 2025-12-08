@@ -22,10 +22,15 @@ class AuthService {
 
   async logout() {
     try {
-      await api.post("/api/auth/logout", {});
-      return { success: true };
-    } catch {
-      return { success: false };
+      const res = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",   // << REQUIRED to send cookies!
+      });
+
+      return await res.json();
+    } catch (err) {
+      console.error("Logout failed:", err);
+      return { success: false, error: err.message };
     }
   }
 

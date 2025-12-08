@@ -2,10 +2,13 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import AuthService from "@/services/authService";
+import { useRouter } from "next/navigation";
 
 const SessionContext = createContext();
 
 export function useSession() {
+
+
 
   const ctx = useContext(SessionContext);
   if (!ctx) throw new Error("useSession must be used within SessionProvider");
@@ -13,6 +16,9 @@ export function useSession() {
 }
 
 export function SessionProvider({ children }) {
+
+  const router = useRouter();
+
   const [session, setSession] = useState(null);       // user object
   const [loading, setLoading] = useState(true);       // initial load
   const [checking, setChecking] = useState(false);    // session refresh flag
@@ -54,6 +60,7 @@ export function SessionProvider({ children }) {
       await AuthService.logout();  // backend clears cookies
     } finally {
       setSession(null);
+      router.push("/login");
     }
   };
 
