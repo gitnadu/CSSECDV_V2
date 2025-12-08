@@ -30,8 +30,8 @@ password: 123456
 
 to run the scripting for the db:
 
-node runMigrations.js
-node runScripts.js
+node scripts/runMigrations.js
+node scripts/runScripts.js
 
 ## User Roles
 

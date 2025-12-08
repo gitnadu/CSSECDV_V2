@@ -1,3 +1,4 @@
+  
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from "react";
@@ -5,6 +6,7 @@ import AuthService from "@/services/authService";
 import CourseService from "@/services/courseService";
 import EnrollmentService from "@/services/enrollmentService";
 import GradeService from "@/services/gradeService";
+import AdminService from '@/services/adminService';
 import { useRouter } from "next/navigation";
 
 const SessionContext = createContext();
@@ -26,6 +28,10 @@ export function SessionProvider({ children }) {
 
   const [sections, setSections] = useState([]);
   const [enrollments, setEnrollments] = useState([]);
+  // admin lists (used by admin view)
+  const [faculty, setFaculty] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [courses, setCourses] = useState([]);
 
   const loadSectionsAndEnrollments = async (role) => {
   try {
@@ -100,6 +106,30 @@ export function SessionProvider({ children }) {
     return result;
   };
 
+  // ----- UPDATE PROFILE -----
+  const updateProfile = async (profileData) => {
+    const result = await AuthService.updateProfile(profileData);
+
+    if (result.success) {
+      // Update session with new profile data
+      setSession((prev) => ({
+        ...prev,
+        first_name: profileData.first_name,
+        last_name: profileData.last_name,
+        email: profileData.email,
+      }));
+    }
+
+    return result;
+  };
+
+  // ----- CHANGE PASSWORD -----
+  const changePassword = async (currentPassword, newPassword) => {
+    const result = await AuthService.changePassword(currentPassword, newPassword);
+    // Password change doesn't update session state, just return result
+    return result;
+  };
+
   // ----- TOGGLE ENROLLMENT (faculty) -----
   const toggleEnrollment = async (sectionId, isOpen) => {
     const result = await CourseService.toggleSectionEnrollment(sectionId, isOpen);
@@ -112,6 +142,59 @@ export function SessionProvider({ children }) {
       setSections((prev) => prev.map((s) => (s.id === updatedSection.id ? updatedSection : s)));
     }
 
+    return result;
+  };
+
+  // ----- ADMIN: FETCH DATA -----
+  const fetchAdminData = async () => {
+    const result = await AdminService.fetchAdminData();
+    if (result.success) {
+      setFaculty(result.faculty || []);
+      setStudents(result.students || []);
+      setCourses(result.courses || []);
+      setSections(result.sections || []); // update shared sections
+    }
+    return result;
+  };
+
+  // ----- ADMIN: CHANGE ROLE -----
+  const changeUserRole = async (userId, newRole) => {
+    const result = await AdminService.changeRole(userId, newRole);
+    if (result.success) {
+      // refresh admin lists
+      await fetchAdminData();
+    }
+    return result;
+  };
+
+  // ----- ADMIN: ASSIGN PROFESSOR -----
+  const assignProfessor = async (sectionId, professorId) => {
+    const result = await AdminService.assignProfessorToSection(sectionId, professorId);
+    if (result.success) {
+      await fetchAdminData();
+    }
+    return result;
+  };
+
+  // ----- ADMIN: STUDENT ENROLLMENTS -----
+  const getStudentEnrollments = async (studentId) => {
+    return await AdminService.getStudentEnrollments(studentId);
+  };
+
+  const enrollStudent = async (sectionId, studentId) => {
+    const result = await AdminService.enrollStudentInSection(sectionId, studentId);
+    if (result.success) {
+      // refresh student enrollments and admin lists handled by caller if needed
+      await fetchAdminData();
+    }
+    return result;
+  };
+
+  const dropStudentEnrollment = async (studentId, enrollmentId) => {
+    const result = await AdminService.dropStudentEnrollment(studentId, enrollmentId);
+    if (result.success) {
+      await fetchAdminData();
+    }
     return result;
   };
 
@@ -208,6 +291,18 @@ export function SessionProvider({ children }) {
     uploadGrade,
     toggleEnrollment,
     isAuthenticated: !!session,
+    updateProfile,
+    changePassword,
+    // admin helpers
+    faculty,
+    students,
+    courses,
+    fetchAdminData,
+    changeUserRole,
+    assignProfessor,
+    getStudentEnrollments,
+    enrollStudent,
+    dropStudentEnrollment,
   };
 
   return (

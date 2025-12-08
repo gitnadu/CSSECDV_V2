@@ -1,4 +1,4 @@
-import SettingsPageClient from './SettingsPageClient';
+import SettingsPageClient from '@/views/components/SettingsPageClient';
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { verifyToken } from "lib/auth";

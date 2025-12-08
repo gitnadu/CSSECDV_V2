@@ -69,6 +69,60 @@ class AuthService {
       return { valid: false };
     }
   }
+
+
+  /**
+   * Change user password
+   */
+  async changePassword(currentPassword, newPassword) {
+    try {
+      const data = await api.put("/api/auth/user", {
+        current_password: currentPassword,
+        new_password: newPassword,
+      });
+
+      return {
+        success: true,
+        message: data.message || "Password changed successfully",
+      };
+    } catch (err) {
+      return {
+        success: false,
+        error: err.message || "Failed to change password",
+      };
+    }
+  }
+
+  /**
+   * Update user profile (first_name, last_name, email)
+   */
+  async updateProfile(profileData) {
+    try {
+      const data = await api.put("/api/auth/user", {
+        first_name: profileData.first_name,
+        last_name: profileData.last_name,
+        email: profileData.email,
+      });
+
+      return {
+        success: true,
+        user: data.user,
+        message: data.message || "Profile updated successfully",
+      };
+    } catch (err) {
+      return {
+        success: false,
+        error: err.message || "Failed to update profile",
+      };
+    }
+  }
+
+
 }
 
 export default new AuthService();
+
+  
+
+  
+  

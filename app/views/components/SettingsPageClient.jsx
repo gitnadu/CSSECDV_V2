@@ -1,14 +1,17 @@
 'use client';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Alert, AlertDescription } from '../components/ui/alert';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { Alert, AlertDescription } from '../../components/ui/alert';
+import { useSession } from '@/context/SessionProvider';
 
 export default function SettingsPageClient({ session }) {
-  const router = useRouter();
+    const routerNav = useRouter();
+    const { updateProfile, changePassword } = useSession();
   
+  const router = routerNav;
   const [formData, setFormData] = useState({
     first_name: session.first_name || '',
     last_name: session.last_name || '',
@@ -33,34 +36,19 @@ export default function SettingsPageClient({ session }) {
     setLoading(true);
     setMessage(null);
 
-    try {
-      const response = await fetch('/api/auth/user', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          first_name: formData.first_name,
-          last_name: formData.last_name,
-          email: formData.email
-        })
-      });
 
-      const data = await response.json();
+    const result = await updateProfile({
+      first_name: formData.first_name,
+      last_name: formData.last_name,
+      email: formData.email,
+    });
 
-      if (response.ok) {
-        setMessage({ type: 'success', text: 'Profile updated successfully!' });
-        // Reload to update session
-        setTimeout(() => window.location.reload(), 1000);
-      } else {
-        setMessage({ type: 'error', text: data.error || 'Failed to update profile' });
-      }
-    } catch (error) {
-      setMessage({ type: 'error', text: 'An error occurred while updating profile' });
-    } finally {
-      setLoading(false);
+    if (result.success) {
+      setMessage({ type: 'success', text: result.message || 'Profile updated successfully!' });
+    } else {
+      setMessage({ type: 'error', text: result.error || 'Failed to update profile' });
     }
+    setLoading(false);
   };
 
   const handleChangePassword = async (e) => {
@@ -80,37 +68,20 @@ export default function SettingsPageClient({ session }) {
       return;
     }
 
-    try {
-      const response = await fetch('/api/auth/user', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          current_password: formData.current_password,
-          new_password: formData.new_password
-        })
-      });
+    const result = await changePassword(formData.current_password, formData.new_password);
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setMessage({ type: 'success', text: 'Password changed successfully!' });
-        setFormData(prev => ({
-          ...prev,
-          current_password: '',
-          new_password: '',
-          confirm_password: ''
-        }));
-      } else {
-        setMessage({ type: 'error', text: data.error || 'Failed to change password' });
-      }
-    } catch (error) {
-      setMessage({ type: 'error', text: 'An error occurred while changing password' });
-    } finally {
-      setLoading(false);
+    if (result.success) {
+      setMessage({ type: 'success', text: result.message || 'Password changed successfully!' });
+      setFormData(prev => ({
+        ...prev,
+        current_password: '',
+        new_password: '',
+        confirm_password: ''
+      }));
+    } else {
+      setMessage({ type: 'error', text: result.error || 'Failed to change password' });
     }
+    setLoading(false);
   };
 
   return (

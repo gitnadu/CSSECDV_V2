@@ -32,12 +32,14 @@ export async function PUT(req) {
     }
 
     const decoded = verifyToken(token);
+
     if (!decoded) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
     const userId = decoded.id;
     const body = await req.json();
+    
     const { first_name, last_name, email, current_password, new_password } = body;
 
     // If changing password, verify current password first

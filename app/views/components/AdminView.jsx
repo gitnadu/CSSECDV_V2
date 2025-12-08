@@ -3,12 +3,22 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { Button } from '../../components/ui/button';
+import { useSession } from '@/context/SessionProvider';
 
 export default function AdminView({ session }) {
-  const [faculty, setFaculty] = useState([]);
-  const [students, setStudents] = useState([]);
-  const [courses, setCourses] = useState([]);
-  const [sections, setSections] = useState([]);
+  const { faculty: ctxFaculty, students: ctxStudents, courses: ctxCourses, sections: ctxSections,
+    fetchAdminData: sessionFetchAdminData,
+    changeUserRole: sessionChangeUserRole,
+    assignProfessor: sessionAssignProfessor,
+    getStudentEnrollments: sessionGetStudentEnrollments,
+    enrollStudent: sessionEnrollStudent,
+    dropStudentEnrollment: sessionDropStudentEnrollment
+  } = useSession();
+
+  const [faculty, setFaculty] = useState(ctxFaculty || []);
+  const [students, setStudents] = useState(ctxStudents || []);
+  const [courses, setCourses] = useState(ctxCourses || []);
+  const [sections, setSections] = useState(ctxSections || []);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedFaculty, setSelectedFaculty] = useState(null);
@@ -21,37 +31,26 @@ export default function AdminView({ session }) {
   const [dropConfirmation, setDropConfirmation] = useState(null);
 
   useEffect(() => {
-    fetchAdminData();
+    // load admin data via session provider
+    const load = async () => {
+      await handleFetchAdminData();
+    };
+    load();
   }, []);
 
-  const fetchAdminData = async () => {
+  const handleFetchAdminData = async () => {
     try {
       setLoading(true);
       setError(null);
-
-      // Fetch all data in parallel with cookie credentials
-      const [facultyRes, studentsRes, coursesRes, sectionsRes] = await Promise.all([
-        fetch('/api/admin/faculty', { credentials: 'include' }),
-        fetch('/api/admin/students', { credentials: 'include' }),
-        fetch('/api/admin/courses', { credentials: 'include' }),
-        fetch('/api/admin/sections', { credentials: 'include' })
-      ]);
-
-      if (!facultyRes.ok || !studentsRes.ok || !coursesRes.ok || !sectionsRes.ok) {
-        throw new Error('Failed to fetch admin data');
+      const result = await sessionFetchAdminData();
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to load admin data');
       }
 
-      const [facultyData, studentsData, coursesData, sectionsData] = await Promise.all([
-        facultyRes.json(),
-        studentsRes.json(),
-        coursesRes.json(),
-        sectionsRes.json()
-      ]);
-
-      setFaculty(facultyData.faculty || []);
-      setStudents(studentsData.students || []);
-      setCourses(coursesData.courses || []);
-      setSections(sectionsData.sections || []);
+      setFaculty(result.faculty || []);
+      setStudents(result.students || []);
+      setCourses(result.courses || []);
+      setSections(result.sections || []);
     } catch (err) {
       console.error('Error fetching admin data:', err);
       setError('Failed to load admin data');
@@ -62,22 +61,13 @@ export default function AdminView({ session }) {
 
   const handleChangeRole = async (userId, newRole) => {
     try {
-      const response = await fetch(`/api/admin/users/${userId}`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: newRole })
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to update role');
-      }
+      const result = await sessionChangeUserRole(userId, newRole);
+      if (!result.success) throw new Error(result.error || 'Failed to update role');
 
       alert('Role updated successfully');
       setShowRoleModal(false);
       setSelectedFaculty(null);
-      await fetchAdminData();
+      await handleFetchAdminData();
     } catch (err) {
       console.error('Error updating role:', err);
       alert(err.message || 'Failed to update role');
@@ -88,23 +78,14 @@ export default function AdminView({ session }) {
     if (!selectedFaculty || !selectedSection) return;
 
     try {
-      const response = await fetch(`/api/admin/sections/${selectedSection.id}/assign`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ professor_id: selectedFaculty.id })
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to assign professor');
-      }
+      const result = await sessionAssignProfessor(selectedSection.id, selectedFaculty.id);
+      if (!result.success) throw new Error(result.error || 'Failed to assign professor');
 
       alert('Professor assigned successfully');
       setShowAssignModal(false);
       setSelectedFaculty(null);
       setSelectedSection(null);
-      await fetchAdminData();
+      await handleFetchAdminData();
     } catch (err) {
       console.error('Error assigning professor:', err);
       alert(err.message || 'Failed to assign professor');
@@ -114,16 +95,10 @@ export default function AdminView({ session }) {
   const handleViewStudentEnrollments = async (student) => {
     try {
       setSelectedStudent(student);
-      const response = await fetch(`/api/admin/students/${student.id}/enrollments`, {
-        credentials: 'include'
-      });
+      const result = await sessionGetStudentEnrollments(student.id);
+      if (!result.success) throw new Error(result.error || 'Failed to load student enrollments');
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch enrollments');
-      }
-
-      const data = await response.json();
-      setStudentEnrollments(data.enrollments || []);
+      setStudentEnrollments(result.enrollments || []);
     } catch (err) {
       console.error('Error fetching student enrollments:', err);
       alert('Failed to load student enrollments');
@@ -134,17 +109,15 @@ export default function AdminView({ session }) {
     if (!selectedStudent || !section) return;
 
     try {
-      const response = await fetch(`/api/admin/sections/${section.id}/enroll`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ student_id: selectedStudent.id })
-      });
+      const result = await sessionEnrollStudent(section.id, selectedStudent.id);
+      if (!result.success) throw new Error(result.error || 'Failed to enroll student');
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to enroll student');
-      }
+      // Optimistically update the section's enrolled count
+      setSections((prev) =>
+        prev.map((s) =>
+          s.id === section.id ? { ...s, enrolled_count: s.enrolled_count + 1 } : s
+        )
+      );
 
       // Show success notification
       setNotification({
@@ -156,9 +129,7 @@ export default function AdminView({ session }) {
       await handleViewStudentEnrollments(selectedStudent);
 
       // Auto-hide notification after 3 seconds
-      setTimeout(() => {
-        setNotification(null);
-      }, 3000);
+      setTimeout(() => { setNotification(null); }, 3000);
     } catch (err) {
       console.error('Error enrolling student:', err);
       setNotification({
@@ -171,7 +142,7 @@ export default function AdminView({ session }) {
     }
   };
 
-  const handleDropStudentEnrollment = async (enrollmentId) => {
+  const handleDropStudentEnrollment = (enrollmentId) => {
     // Show confirmation modal instead of confirm()
     setDropConfirmation({ enrollmentId });
   };
@@ -180,39 +151,33 @@ export default function AdminView({ session }) {
     if (!dropConfirmation) return;
 
     try {
-      const response = await fetch(`/api/admin/students/${selectedStudent.id}/enrollments`, {
-        method: 'DELETE',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enrollment_id: dropConfirmation.enrollmentId })
-      });
+      // Get the section_id from studentEnrollments to update capacity
+      const enrollmentData = studentEnrollments.find(e => e.id === dropConfirmation.enrollmentId);
+      const sectionId = enrollmentData?.section_id;
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to drop student');
+      const result = await sessionDropStudentEnrollment(selectedStudent.id, dropConfirmation.enrollmentId);
+      if (!result.success) throw new Error(result.error || 'Failed to drop student');
+
+      // Optimistically update the section's enrolled count
+      if (sectionId) {
+        setSections((prev) =>
+          prev.map((s) =>
+            s.id === sectionId ? { ...s, enrolled_count: Math.max(0, s.enrolled_count - 1) } : s
+          )
+        );
       }
 
-      setNotification({
-        type: 'success',
-        message: `Student dropped successfully`
-      });
+      setNotification({ type: 'success', message: `Student dropped successfully` });
 
       await handleViewStudentEnrollments(selectedStudent);
       setDropConfirmation(null);
 
-      setTimeout(() => {
-        setNotification(null);
-      }, 3000);
+      setTimeout(() => { setNotification(null); }, 3000);
     } catch (err) {
       console.error('Error dropping student:', err);
-      setNotification({
-        type: 'error',
-        message: err.message || 'Failed to drop student'
-      });
+      setNotification({ type: 'error', message: err.message || 'Failed to drop student' });
       setDropConfirmation(null);
-      setTimeout(() => {
-        setNotification(null);
-      }, 3000);
+      setTimeout(() => { setNotification(null); }, 3000);
     }
   };
 
