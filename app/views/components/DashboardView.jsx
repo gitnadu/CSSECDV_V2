@@ -13,7 +13,7 @@ export default function DashboardView({
   session, // decoded session object
   sections,
   enrollments,
-  onEnroll,
+  //onEnroll, -> replaced with enroll
   onDrop,
   onUploadGrade,
   onToggleEnrollment,
@@ -21,7 +21,7 @@ export default function DashboardView({
 }) {
   // Get section IDs that the student is already enrolled in
   const enrolledSectionIds = enrollments.map(e => e.section_id);
-  const { logout, enroll } = useSession();
+  const { logout } = useSession();
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">    
@@ -60,7 +60,7 @@ export default function DashboardView({
               <CoursesView
                 sections={sections}
                 userRole={session.role}
-                enroll={enroll}
+                //enroll={enroll}
                 enrolledSectionIds={enrolledSectionIds}
               />
             </TabsContent>

@@ -5,11 +5,11 @@ npm install next react react-dom
 
 npm install mongoose bcryptjs jsonwebtoken cookie
 
-npm installl tailwind-merge, clsx, tailwindcss-animate
+npm installl tailwind-merge clsx tailwindcss-animate
 
 npm instalL pg
 
-npm install @tailwindcss/postcss, autoprefixer
+npm install @tailwindcss@3 postcss autoprefixer
 
 npm install fs, dotenv
 

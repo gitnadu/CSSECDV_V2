@@ -18,8 +18,7 @@ export default async function DashboardPage() {
 
   const decodedSession = await verifyToken(sessionValue);
 
-  console.log("Decoded cookie value:", decodedSession);
-  console.log("Session value:", sessionValue);
+  console.log("Decoded session:", decodedSession);
 
   if (!decodedSession) redirect("/login");
 

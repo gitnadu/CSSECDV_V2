@@ -22,6 +22,9 @@ export function SessionProvider({ children }) {
   const [loading, setLoading] = useState(true);       // initial load
   const [checking, setChecking] = useState(false);    // session refresh flag
 
+  const [sections, setSections] = useState([]);
+  const [enrollments, setEnrollments] = useState([]);
+
   // Load session on first mount
   useEffect(() => {
     const loadSession = async () => {
@@ -44,10 +47,21 @@ export function SessionProvider({ children }) {
 
   // ----- ENROLL -----
   const enroll = async (sectionId) => {
-    try {
-      await EnrollmentService.enrollInSection(sectionId);  // enroll on a section, user the session userId
-    } finally {
-      router.push("/login");
+    const result = await EnrollmentService.enrollInSection(sectionId);
+
+    console.log("Enrollment result:", result);
+
+    if (result.success) {
+      // update state so UI reacts
+      setEnrollments(prev => [...prev, result.enrollment]);
+
+      setSections(prev =>
+        prev.map(s =>
+          s.id === sectionId
+            ? { ...s, enrolled_count: s.enrolled_count + 1 }
+            : s
+        )
+      );
     }
   };
 

@@ -14,6 +14,7 @@ export async function DELETE(req, { params }) {
     }
 
     const payload = verifyToken(token);
+
     if (!payload || !payload.id) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }

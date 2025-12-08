@@ -9,11 +9,13 @@ export async function POST(req) {
 
     // Extract userId from JWT token in session cookie
     const token = req.cookies.get("session")?.value;
+    
     if (!token) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
     const payload = verifyToken(token);
+
     if (!payload || !payload.id) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }

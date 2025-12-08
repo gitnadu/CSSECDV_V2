@@ -2,13 +2,18 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
+import { useSession  } from "@/context/SessionProvider";
+
 
 /**
  * CoursesView - Displays sections for enrollment
  * Now shows SECTIONS (concrete) instead of courses (abstract)
  * Each section has: course code, section name, professor, capacity (max 5)
  */
-export default function CoursesView({ sections, userRole, enroll, enrolledSectionIds = [] }) {
+export default function CoursesView({ sections, userRole, enrolledSectionIds = [] }) {
+
+  const { enroll } = useSession();
+
   // Group sections by course for better organization
   const sectionsByCourse = sections.reduce((acc, section) => {
     const courseCode = section.course_code;
@@ -31,6 +36,7 @@ export default function CoursesView({ sections, userRole, enroll, enrolledSectio
           </h3>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {courseData.sections.map(section => {
+
               const isFull = section.enrolled_count >= section.capacity;
               const isEnrolled = enrolledSectionIds.includes(section.id);
               const isClosed = section.is_open === false;
