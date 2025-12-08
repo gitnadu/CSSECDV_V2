@@ -25,6 +25,8 @@ export function SessionProvider({ children }) {
   const [sections, setSections] = useState([]);
   const [enrollments, setEnrollments] = useState([]);
 
+  
+
   // Load session on first mount
   useEffect(() => {
     const loadSession = async () => {

@@ -1,9 +1,8 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { useSession  } from "@/context/SessionProvider";
-
 
 /**
  * CoursesView - Displays sections for enrollment
@@ -13,6 +12,29 @@ import { useSession  } from "@/context/SessionProvider";
 export default function CoursesView({ sections, userRole, enrolledSectionIds = [] }) {
 
   const { enroll } = useSession();
+
+  const [loadingSection, setLoadingSection] = useState(null);
+  const [error, setError] = useState("");
+
+  const handleEnroll = async (sectionId) => {
+    setError("");
+    setLoadingSection(sectionId); // show loading state on that button only
+
+    try {
+      const result = await enroll(sectionId);  // call SessionProvider.enroll
+
+      if (!result.success) {
+        setError(result.error || "Enrollment failed");
+      }
+
+      // If success → SessionProvider updates global state → UI re-renders
+    } catch (err) {
+      console.error("Enroll error:", err);
+      setError("Unexpected enrollment error");
+    } finally {
+      setLoadingSection(null);
+    }
+  };
 
   // Group sections by course for better organization
   const sectionsByCourse = sections.reduce((acc, section) => {
@@ -76,12 +98,18 @@ export default function CoursesView({ sections, userRole, enrolledSectionIds = [
                       </div>
                       {userRole === 'student' && !isEnrolled && (
                         <Button
-                          onClick={() => enroll(section.id)}
-                          disabled={!canEnroll}
+                          onClick={() => handleEnroll(section.id)}
+                          disabled={!canEnroll || loadingSection === section.id}
                           className="w-full mt-2"
                           size="sm"
                         >
-                          {isClosed ? 'Closed' : isFull ? 'Full' : 'Enroll'}
+                          {loadingSection === section.id
+                            ? "Processing..."
+                            : isClosed 
+                              ? 'Closed'
+                              : isFull 
+                                ? 'Full'
+                                : 'Enroll'}
                         </Button>
                       )}
                     </div>
