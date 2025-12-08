@@ -51,7 +51,8 @@ INSERT INTO users (id, username, password_hash, role, first_name, last_name, ema
 (11, 'faculty1', '$2a$10$pp0T5EeelJeHt6d43HSIfewPlJK9zq48QE4VjTp.5.N5kHhWD0oru', 'faculty', 'Robert', 'Smith', 'robert.smith@university.edu'),
 (12, 'faculty2', '$2a$10$pp0T5EeelJeHt6d43HSIfewPlJK9zq48QE4VjTp.5.N5kHhWD0oru', 'faculty', 'Emily', 'Johnson', 'emily.johnson@university.edu'),
 (13, 'faculty3', '$2a$10$pp0T5EeelJeHt6d43HSIfewPlJK9zq48QE4VjTp.5.N5kHhWD0oru', 'faculty', 'Michael', 'Williams', 'michael.williams@university.edu'),
-(14, 'faculty4', '$2a$10$pp0T5EeelJeHt6d43HSIfewPlJK9zq48QE4VjTp.5.N5kHhWD0oru', 'faculty', 'Sarah', 'Martinez', 'sarah.martinez@university.edu');
+(14, 'faculty4', '$2a$10$pp0T5EeelJeHt6d43HSIfewPlJK9zq48QE4VjTp.5.N5kHhWD0oru', 'faculty', 'Sarah', 'Martinez', 'sarah.martinez@university.edu'),
+(15, 'admin', '$2a$10$pp0T5EeelJeHt6d43HSIfewPlJK9zq48QE4VjTp.5.N5kHhWD0oru', 'admin', 'System', 'Administrator', 'admin@university.edu');
 
 SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));
 

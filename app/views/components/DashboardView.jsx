@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from '../../components/ui/alert';
 import CoursesView from './CoursesView';
 import GradesView from './GradesView';
 import FacultyView from './FacultyView';
+import AdminView from './AdminView';
 import { useSession  } from "@/context/SessionProvider";
 
 
@@ -93,6 +94,8 @@ export default function DashboardView({
               />
             </TabsContent>
           </Tabs>
+        ) : session.role === 'admin' ? (
+          <AdminView session={session} />
         ) : (
           <FacultyView
             enrollments={enrollments}

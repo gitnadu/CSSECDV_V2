@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   username VARCHAR(50) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
-  role VARCHAR(20) NOT NULL CHECK (role IN ('student', 'faculty')),
+  role VARCHAR(20) NOT NULL CHECK (role IN ('student', 'faculty', 'admin')),
   first_name VARCHAR(100),
   last_name VARCHAR(100),
   email VARCHAR(255) UNIQUE,

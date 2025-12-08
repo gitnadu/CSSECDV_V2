@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import EnrollmentRepository from "@/lib/enrollmentRepository";
+import { EnrollmentRepository } from "@/lib/enrollmentRepository";
 
 export async function GET(req, { params }) {
   const { id } = params;
