@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import { SectionRepository } from "@/lib/sectionRepository";
 import { formatSection } from "@/lib/formatters";
 
-export async function GET(req, { params }) {
-  const { professorId } = params;
+export async function GET() {
 
   try {
     const sections = await SectionRepository.findByProfessorId(professorId);

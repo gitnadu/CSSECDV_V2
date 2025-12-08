@@ -15,6 +15,9 @@ export default function FacultyView({ enrollments, sections, onUploadGrade, onTo
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState('by-section'); // 'by-section' or 'all'
 
+  console.log("enrollments in faculty view " + JSON.stringify(enrollments))
+  console.log("sections in faculty view " + JSON.stringify(sections))
+  
   // Valid grade options
   const gradeOptions = [
     { value: '', label: 'Select Grade' },

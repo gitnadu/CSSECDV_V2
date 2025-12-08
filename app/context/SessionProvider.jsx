@@ -38,7 +38,8 @@ export function SessionProvider({ children }) {
 
     // fetch my enrollments
 
-    const enrollmentsRes = await EnrollmentService.getMyEnrollments();
+    const enrollmentsRes = await EnrollmentService.getMyEnrollments(); // this gets the enrollment for the logged STUDEENT
+    
     if (enrollmentsRes.success) {
       setEnrollments(enrollmentsRes.enrollments || []);
     }

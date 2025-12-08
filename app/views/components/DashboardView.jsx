@@ -20,7 +20,7 @@ export default function DashboardView({
 
   const { logout, enrollments, sections } = useSession();
 
-  console.log("session "+ session)
+  console.log("session " + session)
   // Get section IDs that the student is already enrolled in
   const enrolledSectionIds = enrollments.map(e => e.section_id);
 
