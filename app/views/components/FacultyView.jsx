@@ -8,9 +8,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/ta
 import { useSession  } from "@/context/SessionProvider";
 
 
-export default function FacultyView({ enrollments, sections }) {
+export default function FacultyView({ enrollments, sections, session }) {
 
   const { uploadGrade, toggleEnrollment } = useSession();
+
+  // Filter sections to only show those assigned to the current faculty member
+  const mySections = useMemo(() => {
+    if (!session?.id) return [];
+    return sections.filter(section => section.professor_id === session.id);
+  }, [sections, session?.id]);
 
   const [gradeForm, setGradeForm] = useState({ enrollmentId: '', grade: '' });
   const [error, setError] = useState('');
@@ -34,10 +40,10 @@ export default function FacultyView({ enrollments, sections }) {
 
   // Group enrollments by section and include all professor's sections (even with 0 enrollments)
   const enrollmentsBySection = useMemo(() => {
-    // First, create entries for all professor's sections
+    // First, create entries for all professor's assigned sections
     const sectionMap = {};
     
-    sections.forEach(section => {
+    mySections.forEach(section => {
       const sectionKey = `${section.course_code}-${section.section_name}`;
       sectionMap[sectionKey] = {
         course_code: section.course_code,
@@ -56,7 +62,7 @@ export default function FacultyView({ enrollments, sections }) {
     });
 
     return sectionMap;
-  }, [enrollments, sections]);
+  }, [enrollments, mySections]);
 
   // Get section options for filter
   const sectionOptions = useMemo(() => {
@@ -209,7 +215,7 @@ const handleSubmit = () => {
                   {sectionOptions.map(sectionKey => {
                     const section = enrollmentsBySection[sectionKey];
                     // Find the full section data to get is_open status and section ID
-                    const fullSection = sections.find(s => 
+                    const fullSection = mySections.find(s => 
                       s.course_code === section.course_code && s.section_name === section.section_name
                     );
                     const isOpen = fullSection?.is_open !== false;
@@ -304,6 +310,7 @@ const handleSubmit = () => {
               <div className="space-y-2">
                 {filteredAndSortedEnrollments.map(enrollment => (
                   <EnrollmentCard 
+                    key={enrollment.id || enrollment.enrollment_id}
                     enrollment={enrollment}
                     gradeOptions={gradeOptions}
                     uploadGrade={uploadGrade}

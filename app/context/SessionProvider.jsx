@@ -33,6 +33,8 @@ export function SessionProvider({ children }) {
   const [faculty, setFaculty] = useState([]);
   const [students, setStudents] = useState([]);
   const [courses, setCourses] = useState([]);
+  // Last login info for security notification
+  const [lastLoginInfo, setLastLoginInfo] = useState(null);
 
   const loadSectionsAndEnrollments = async (role) => {
   try {
@@ -254,10 +256,17 @@ export function SessionProvider({ children }) {
     if (result.success) {
       // Backend sets HttpOnly cookie; just store user object
       setSession(result.user);
+      // Store last login info for security notification
+      setLastLoginInfo(result.last_login);
       // Load sections and enrollments after login
       await loadSectionsAndEnrollments(result.user.role);
     }
     return result;
+  };
+
+  // ----- CLEAR LAST LOGIN INFO -----
+  const clearLastLoginInfo = () => {
+    setLastLoginInfo(null);
   };
 
   // ----- LOGOUT -----
@@ -336,6 +345,9 @@ export function SessionProvider({ children }) {
     loadSectionsAndEnrollments,
     // audit logs
     getAuditLogs,
+    // last login info for security notification
+    lastLoginInfo,
+    clearLastLoginInfo,
   };
 
   return (
