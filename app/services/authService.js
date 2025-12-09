@@ -9,6 +9,7 @@ class AuthService {
         return {
           success: true,
           user: response.user,
+          last_login: response.last_login || null,
         };
       } catch (err) {
         console.error("AuthService.login error:", err);

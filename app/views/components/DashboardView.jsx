@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '../../components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { Alert, AlertDescription } from '../../components/ui/alert';
@@ -17,7 +17,8 @@ export default function DashboardView({
   message
 }) {
 
-  const { logout, enrollments, sections, drop, loadSectionsAndEnrollments } = useSession();
+  const { logout, enrollments, sections, drop, loadSectionsAndEnrollments, lastLoginInfo, clearLastLoginInfo } = useSession();
+  const [showLoginNotification, setShowLoginNotification] = useState(true);
 
   // Ensure sections/enrollments are loaded after client-side login/navigation
   useEffect(() => {
@@ -47,6 +48,47 @@ export default function DashboardView({
     window.location.href = '/settings';
   };
 
+  // Handle dismissing the last login notification
+  const dismissLoginNotification = () => {
+    setShowLoginNotification(false);
+    clearLastLoginInfo();
+  };
+
+  // Format the last login notification message
+  const formatLastLoginMessage = () => {
+    if (!lastLoginInfo) return null;
+
+    const formatDate = (dateStr) => {
+      if (!dateStr) return 'Unknown';
+      const date = new Date(dateStr);
+      return date.toLocaleString('en-US', {
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+    };
+
+    if (lastLoginInfo.was_successful) {
+      return {
+        type: 'success',
+        title: '✅ Last Successful Login',
+        message: `Your last successful login was on ${formatDate(lastLoginInfo.timestamp)}.`
+      };
+    } else {
+      return {
+        type: 'warning',
+        title: '⚠️ Security Notice',
+        message: `There was a failed login attempt on your account on ${formatDate(lastLoginInfo.timestamp)}. If this wasn't you, please change your password immediately.`
+      };
+    }
+  };
+
+  const loginNotification = formatLastLoginMessage();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">    
       <div className="max-w-6xl mx-auto">
@@ -74,6 +116,32 @@ export default function DashboardView({
             </Button>
           </div>
         </div>
+
+        {/* Last Login Security Notification */}
+        {showLoginNotification && loginNotification && (
+          <Alert 
+            className={`mb-4 ${loginNotification.type === 'warning' ? 'border-yellow-500 bg-yellow-50' : 'border-green-500 bg-green-50'}`}
+          >
+            <div className="flex justify-between items-start">
+              <div>
+                <p className={`font-semibold ${loginNotification.type === 'warning' ? 'text-yellow-800' : 'text-green-800'}`}>
+                  {loginNotification.title}
+                </p>
+                <AlertDescription className={loginNotification.type === 'warning' ? 'text-yellow-700' : 'text-green-700'}>
+                  {loginNotification.message}
+                </AlertDescription>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={dismissLoginNotification}
+                className="text-gray-500 hover:text-gray-700 -mt-1 -mr-2"
+              >
+                ✕
+              </Button>
+            </div>
+          </Alert>
+        )}
 
         {message && (
           <Alert className="mb-4" variant={message.type === 'error' ? 'destructive' : 'default'}>
@@ -108,6 +176,7 @@ export default function DashboardView({
           <FacultyView
             enrollments={enrollments}
             sections={sections}
+            session={session}
             onUploadGrade={onUploadGrade}
             onToggleEnrollment={onToggleEnrollment}
           />

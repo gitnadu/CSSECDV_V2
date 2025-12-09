@@ -23,6 +23,9 @@ export async function POST(req) {
     const user = await UserRepository.authenticate(username, password);
 
     if (!user) {
+      // Record failed login attempt for the username (if user exists)
+      await UserRepository.recordFailedLogin(username);
+
       // Log failed auth attempt
       try {
         
@@ -34,6 +37,12 @@ export async function POST(req) {
 
       return NextResponse.json({ error: "Invalid username and/or password" }, { status: 401 });
     }
+
+    // Get the last login information BEFORE recording the new successful login
+    const lastLoginInfo = await UserRepository.getLastLoginInfo(user.id);
+
+    // Record the successful login
+    await UserRepository.recordSuccessfulLogin(user.id);
 
     // Log successful auth
     try {
@@ -52,6 +61,12 @@ export async function POST(req) {
       access_token: accessToken,
       refresh_token: refreshToken,
       user,
+      // Include last login information for the user
+      last_login: lastLoginInfo ? {
+        timestamp: lastLoginInfo.last_login_at,
+        was_successful: lastLoginInfo.last_login_success,
+        last_failed_at: lastLoginInfo.last_failed_login_at
+      } : null
     });
 
     // HttpOnly cookie for session security

@@ -7,17 +7,34 @@ import { cn } from "lib/utils";
  * - setTab   : setter (function) — NOT starting with "on"
  *
  * We always destructure tabValue/setTab out of props before spreading into DOM.
+ * 
+ * Supports both controlled (value/onValueChange) and uncontrolled (defaultValue) modes.
  */
 
 /* ROOT */
 const Tabs = React.forwardRef(function Tabs(
-  { className, defaultValue, children, ...props },
+  { className, defaultValue, value, onValueChange, children, ...props },
   ref
 ) {
-  const [tabValue, setTab] = React.useState(defaultValue);
+  // Support both controlled and uncontrolled modes
+  const [internalValue, setInternalValue] = React.useState(defaultValue);
+  
+  // Determine if we're in controlled mode
+  const isControlled = value !== undefined;
+  const tabValue = isControlled ? value : internalValue;
+  
+  const setTab = React.useCallback((newValue) => {
+    if (!isControlled) {
+      setInternalValue(newValue);
+    }
+    if (onValueChange) {
+      onValueChange(newValue);
+    }
+  }, [isControlled, onValueChange]);
 
   // keep other props that *are* safe to pass to the root container
-  const { /* remove any internal if accidentally passed */  ...rootProps } = props;
+  // Remove any internal props that might accidentally be passed
+  const { ...rootProps } = props;
 
   return (
     <div ref={ref} className={className} {...rootProps}>

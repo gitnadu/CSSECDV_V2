@@ -10,10 +10,10 @@ CREATE TABLE IF NOT EXISTS password_history (
 );
 
 -- Create index for faster lookups by user_id
-CREATE INDEX idx_password_history_user_id ON password_history(user_id);
+CREATE INDEX IF NOT EXISTS idx_password_history_user_id ON password_history(user_id);
 
 -- Create index for created_at to help with cleanup of old history
-CREATE INDEX idx_password_history_created_at ON password_history(created_at);
+CREATE INDEX IF NOT EXISTS idx_password_history_created_at ON password_history(created_at);
 
 -- Add current passwords to history for existing users
 INSERT INTO password_history (user_id, password_hash, created_at)
