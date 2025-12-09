@@ -42,7 +42,7 @@ export function SessionProvider({ children }) {
     if (sectionsRes.success) {
       setSections(sectionsRes.sections || []);
     }
-    console.log("Sections loaded:", sectionsRes.sections);
+    
 
     // fetch my enrollments
 
@@ -52,17 +52,15 @@ export function SessionProvider({ children }) {
       enrollmentsRes = await EnrollmentService.getMyEnrollments(); // this gets the enrollment for the logged STUDENT
     }else{
       enrollmentsRes = await EnrollmentService.getMyEnrollmentsFaculty();
-      console.log("Faculty enrollments loaded");
+      
     }
 
     if (enrollmentsRes.success) {
       setEnrollments(enrollmentsRes.enrollments || []);
     }
 
-    console.log("Enrollments loaded:", enrollmentsRes.enrollments);
-
   } catch (err) {
-    console.error("Error loading sections/enrollments:", err);
+    
   }
 };
 
@@ -131,12 +129,10 @@ export function SessionProvider({ children }) {
       try {
         await AuthService.logout();
       } catch (e) {
-        console.warn("logout after pw change failed:", e);
+        console.error("ERROR");
       }
 
       // Clear sensitive client state
-      
-  
 
       alert("Password changed. Please sign in again with your new password.");
 
@@ -145,7 +141,7 @@ export function SessionProvider({ children }) {
       // Return the original success result so caller can handle UI
       return result;
     } catch (err) {
-      console.error("changePassword error:", err);
+      console.error("ERROR");
       return { success: false, error: err?.message || "Unknown error" };
     }
   };
@@ -154,8 +150,6 @@ export function SessionProvider({ children }) {
   // ----- TOGGLE ENROLLMENT (faculty) -----
   const toggleEnrollment = async (sectionId, isOpen) => {
     const result = await CourseService.toggleSectionEnrollment(sectionId, isOpen);
-
-    console.log("Toggle enrollment result:", result.success);
 
     if (result.success) {
       // Update local sections state with the returned section
@@ -306,21 +300,8 @@ export function SessionProvider({ children }) {
   };
 
   // ----- AUDIT LOGS -----
-  const getAuditLogs = async (limit = 100, offset = 0, eventType = null) => {
-    try {
-      if (eventType) {
-        const res = await AdminAuditService.getAuditLogsByEventType(eventType, limit, offset);
-        if (process.env.NODE_ENV === 'development') console.log('[SessionProvider] getAuditLogs by eventType result:', eventType, res);
-        return res;
-      } else {
-        const res = await AdminAuditService.getAuditLogs(limit, offset);
-        if (process.env.NODE_ENV === 'development') console.log('[SessionProvider] getAuditLogs result:', res);
-        return res;
-      }
-    } catch (err) {
-      console.error('[SessionProvider] getAuditLogs error:', err);
-      return { success: false, logs: [], error: err?.message };
-    }
+  const getAuditLogs = async (limit = 100, offset = 0) => {
+      return await AdminAuditService.getAuditLogs(limit, offset);
   };
 
   const value = {

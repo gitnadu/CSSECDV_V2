@@ -12,14 +12,8 @@ class AdminAuditService {
   async getAuditLogs(limit = 100, offset = 0) {
     try {
       const data = await api.get(`/api/admin/audit-logs?limit=${limit}&offset=${offset}`);
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[AdminAuditService] getAuditLogs response:', data);
-      }
       return { success: true, logs: data.logs || [] };
     } catch (err) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('[AdminAuditService] getAuditLogs error:', err);
-      }
       return { success: false, logs: [], error: err.message || "Failed to fetch audit logs" };
     }
   }
@@ -30,14 +24,8 @@ class AdminAuditService {
   async getAuditLogsByEventType(eventType, limit = 50, offset = 0) {
     try {
       const data = await api.get(`/api/admin/audit-logs?eventType=${eventType}&limit=${limit}&offset=${offset}`);
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[AdminAuditService] getAuditLogsByEventType response:', eventType, data);
-      }
       return { success: true, logs: data.logs || [] };
     } catch (err) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('[AdminAuditService] getAuditLogsByEventType error:', eventType, err);
-      }
       return { success: false, logs: [], error: err.message || "Failed to fetch audit logs" };
     }
   }

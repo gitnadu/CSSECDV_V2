@@ -17,7 +17,7 @@ export async function POST(req, { params }) {
       return NextResponse.json({ error: "Section is full" }, { status: 409 });
     }
 
-    console.error("[Section] Increment error:", err);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

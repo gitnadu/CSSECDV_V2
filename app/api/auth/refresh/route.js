@@ -34,7 +34,7 @@ export async function POST(req) {
       user,
     });
   } catch (error) {
-    console.error("[Auth] RefreshToken error:", error);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

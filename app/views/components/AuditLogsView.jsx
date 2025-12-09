@@ -38,19 +38,17 @@ export default function AuditLogsView({ session }) {
       const eventType = filterType !== 'all' ? filterType : null;
       const result = await getAuditLogs(limit, offset, eventType);
 
-      console.log('Audit logs fetched:', result.logs);
-
       if (result.success) {
         setLogs(result.logs);
         setPagination({ limit, offset });
 
       } else {
-        console.error('Failed to fetch audit logs:', result.error);
+        console.error("ERROR");
         alert('Failed to load audit logs');
         setLogs([]);
       }
     } catch (err) {
-      console.error('Error fetching audit logs:', err);
+      console.error("ERROR");
       alert('Failed to load audit logs');
       setLogs([]);
     } finally {

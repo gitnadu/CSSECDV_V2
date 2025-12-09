@@ -77,7 +77,6 @@ class CourseService {
       const data = await api.post(`/api/sections/toggle`, {
         is_open: isOpen, sectionId
       });
-
       return {
         success: true,
         section: data.section,

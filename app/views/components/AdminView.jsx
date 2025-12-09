@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../..
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { Button } from '../../components/ui/button';
 import { useSession } from '@/context/SessionProvider';
-import AuditLogsView from './AuditLogsView';
 
 export default function AdminView({ session }) {
   const { faculty: ctxFaculty, students: ctxStudents, courses: ctxCourses, sections: ctxSections,
@@ -20,7 +19,6 @@ export default function AdminView({ session }) {
   const [students, setStudents] = useState(ctxStudents || []);
   const [courses, setCourses] = useState(ctxCourses || []);
   const [sections, setSections] = useState(ctxSections || []);
-  const [allUsers, setAllUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedFaculty, setSelectedFaculty] = useState(null);
@@ -59,11 +57,8 @@ export default function AdminView({ session }) {
       setStudents(result.students || []);
       setCourses(result.courses || []);
       setSections(result.sections || []);
-      // Combine faculty and students for all users tab
-      const combined = [...(result.faculty || []), ...(result.students || [])];
-      setAllUsers(combined.sort((a, b) => a.username.localeCompare(b.username)));
     } catch (err) {
-      console.error('Error fetching admin data:', err);
+      console.error("ERROR");
       setError('Failed to load admin data');
     } finally {
       setLoading(false);
@@ -80,7 +75,7 @@ export default function AdminView({ session }) {
       setSelectedFaculty(null);
       await handleFetchAdminData();
     } catch (err) {
-      console.error('Error updating role:', err);
+      console.error("ERROR");
       alert(err.message || 'Failed to update role');
     }
   };
@@ -98,7 +93,7 @@ export default function AdminView({ session }) {
       setSelectedSection(null);
       await handleFetchAdminData();
     } catch (err) {
-      console.error('Error assigning professor:', err);
+      console.error("ERROR");
       setNotification({
         type: 'error',
         message: err.message || 'Failed to assign professor'
@@ -117,7 +112,7 @@ export default function AdminView({ session }) {
 
       setStudentEnrollments(result.enrollments || []);
     } catch (err) {
-      console.error('Error fetching student enrollments:', err);
+      console.error("ERROR");
       alert('Failed to load student enrollments');
     }
   };
@@ -148,7 +143,7 @@ export default function AdminView({ session }) {
       // Auto-hide notification after 3 seconds
       setTimeout(() => { setNotification(null); }, 3000);
     } catch (err) {
-      console.error('Error enrolling student:', err);
+      console.error("ERROR");
       setNotification({
         type: 'error',
         message: err.message || 'Failed to enroll student'
@@ -192,37 +187,9 @@ export default function AdminView({ session }) {
 
       setTimeout(() => { setNotification(null); }, 3000);
     } catch (err) {
-      console.error('Error dropping student:', err);
+      console.error("ERROR");
       setNotification({ type: 'error', message: err.message || 'Failed to drop student' });
       setDropConfirmation(null);
-      setTimeout(() => { setNotification(null); }, 3000);
-    }
-  };
-
-  const handleResetSecurityQuestions = async (userId, username) => {
-    if (!confirm(`Reset security questions for ${username}? This will allow them to set new security questions.`)) {
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/admin/security-questions', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId }),
-        credentials: 'include'
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to reset security questions');
-      }
-
-      setNotification({ type: 'success', message: data.message });
-      setTimeout(() => { setNotification(null); }, 3000);
-    } catch (err) {
-      console.error('Error resetting security questions:', err);
-      setNotification({ type: 'error', message: err.message || 'Failed to reset security questions' });
       setTimeout(() => { setNotification(null); }, 3000);
     }
   };
@@ -256,14 +223,12 @@ export default function AdminView({ session }) {
           </div>
         </div>
       )}
-      <Tabs defaultValue="allusers" className="space-y-4">
+      <Tabs defaultValue="faculty" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="allusers">All Users ({allUsers.length})</TabsTrigger>
           <TabsTrigger value="faculty">Faculty ({faculty.length})</TabsTrigger>
           <TabsTrigger value="students">Students ({students.length})</TabsTrigger>
           <TabsTrigger value="courses">Courses ({courses.length})</TabsTrigger>
           <TabsTrigger value="sections">Sections ({sections.length})</TabsTrigger>
-          <TabsTrigger value="audit">Audit Logs</TabsTrigger>
         </TabsList>
 
         <TabsContent value="faculty">
@@ -603,66 +568,6 @@ export default function AdminView({ session }) {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-
-        {/* All Users Tab */}
-        <TabsContent value="allusers">
-          <Card>
-            <CardHeader>
-              <CardTitle>All Users</CardTitle>
-              <CardDescription>Manage security questions for all users in the system</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50">
-                    <tr className="border-b">
-                      <th className="text-left p-2">Username</th>
-                      <th className="text-left p-2">Full Name</th>
-                      <th className="text-left p-2">Email</th>
-                      <th className="text-left p-2">Role</th>
-                      <th className="text-left p-2">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {allUsers.map((user) => (
-                      <tr key={user.id} className="border-b hover:bg-gray-50">
-                        <td className="p-2 font-medium">{user.username}</td>
-                        <td className="p-2">{user.first_name} {user.last_name}</td>
-                        <td className="p-2 text-sm text-gray-600">{user.email}</td>
-                        <td className="p-2">
-                          <span className={`px-2 py-1 rounded text-xs font-medium ${
-                            user.role === 'admin' ? 'bg-purple-100 text-purple-800' :
-                            user.role === 'faculty' ? 'bg-blue-100 text-blue-800' :
-                            'bg-green-100 text-green-800'
-                          }`}>
-                            {user.role}
-                          </span>
-                        </td>
-                        <td className="p-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleResetSecurityQuestions(user.id, user.username)}
-                            className="text-xs"
-                          >
-                            Reset Security Questions
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {allUsers.length === 0 && (
-                  <p className="text-center text-gray-500 py-8">No users found</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="audit">
-          <AuditLogsView session={session} />
         </TabsContent>
       </Tabs>
 

@@ -10,7 +10,7 @@ export async function POST(req, { params }) {
     const updated = await SectionRepository.findById(id);
     return NextResponse.json({ section: formatSection(updated) });
   } catch (err) {
-    console.error("[Section] Decrement error:", err);
+    console.error('ERROR');
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -29,7 +29,7 @@ export async function POST(req) {
     const user = await User.create({ email, passwordHash: pwHash, role: "student", passwordLastChangedAt: new Date() });
     return NextResponse.json({ ok: true, id: user._id });
   } catch (e) {
-    console.error(e);
+    console.error('ERROR');
     return NextResponse.json({ error: "An error occurred" }, { status: 500 });
   }
 }

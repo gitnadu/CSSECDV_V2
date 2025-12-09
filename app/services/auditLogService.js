@@ -37,10 +37,10 @@ class AuditLogService {
         details,
         status: "FAILURE",
       });
-      console.log("[Audit] Validation failure logged:", result);
+      
       return result;
     } catch (err) {
-      console.error("[Audit] Error logging validation failure:", err);
+      console.error("ERROR");
     }
   }
 
@@ -59,10 +59,10 @@ class AuditLogService {
         action: "POST",
         status: "SUCCESS",
       });
-      console.log("[Audit] Auth success logged:", result?.id);
+      
       return result;
     } catch (err) {
-      console.error("[Audit] Error logging auth success:", err);
+      console.error("ERROR");
     }
   }
 
@@ -81,10 +81,10 @@ class AuditLogService {
         details: { reason },
         status: "FAILURE",
       });
-      console.log("[Audit] Auth failure logged:", result?.id);
+
       return result;
     } catch (err) {
-      console.error("[Audit] Error logging auth failure:", err);
+      console.error("ERROR");
     }
   }
 
@@ -103,10 +103,10 @@ class AuditLogService {
         details: { reason: "Too many failed attempts", attemptCount },
         status: "BLOCKED",
       });
-      console.log("[Audit] Auth lockout logged:", result?.id);
+
       return result;
     } catch (err) {
-      console.error("[Audit] Error logging auth lockout:", err);
+      console.error("ERROR");
     }
   }
 
@@ -126,10 +126,10 @@ class AuditLogService {
         details: { reason },
         status: "FAILURE",
       });
-      console.log("[Audit] Access denied logged:", result?.id);
+      
       return result;
     } catch (err) {
-      console.error("[Audit] Error logging access denied:", err);
+     console.error("ERROR");
     }
   }
 
@@ -148,10 +148,10 @@ class AuditLogService {
         action: "POST",
         status: "SUCCESS",
       });
-      console.log("[Audit] Password change logged:", result?.id);
+      
       return result;
     } catch (err) {
-      console.error("[Audit] Error logging password change:", err);
+      console.error("ERROR");
     }
   }
 
@@ -171,10 +171,10 @@ class AuditLogService {
         details: { role },
         status: "SUCCESS",
       });
-      console.log("[Audit] Account created logged:", result?.id);
+      
       return result;
     } catch (err) {
-      console.error("[Audit] Error logging account creation:", err);
+      console.error("ERROR");
     }
   }
 
@@ -194,10 +194,10 @@ class AuditLogService {
         details: { targetUserId, targetUsername, newRole },
         status: "SUCCESS",
       });
-      console.log("[Audit] Role change logged:", result?.id);
+      
       return result;
     } catch (err) {
-      console.error("[Audit] Error logging role change:", err);
+      console.error("ERROR");
     }
   }
 
@@ -217,10 +217,10 @@ class AuditLogService {
         details,
         status: "SUCCESS",
       });
-      console.log("[Audit] Data modification logged:", result?.id);
+      
       return result;
     } catch (err) {
-      console.error("[Audit] Error logging data modification:", err);
+      console.error("ERROR");
     }
   }
 
@@ -231,7 +231,7 @@ class AuditLogService {
     try {
       return await AuditLogRepository.getRecentLogs(hours, limit);
     } catch (err) {
-      console.error("[Audit] Error getting recent logs:", err);
+      console.error("ERROR");
       return [];
     }
   }
@@ -243,7 +243,7 @@ class AuditLogService {
     try {
       return await AuditLogRepository.findAll(limit, offset);
     } catch (err) {
-      console.error("[Audit] Error getting all logs:", err);
+      console.error("ERROR");
       return [];
     }
   }
@@ -255,7 +255,7 @@ class AuditLogService {
     try {
       return await AuditLogRepository.findByEventType(eventType, limit, offset);
     } catch (err) {
-      console.error("[Audit] Error getting logs by event type:", err);
+      console.error("ERROR");
       return [];
     }
   }

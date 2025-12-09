@@ -8,12 +8,10 @@ import { useEffect } from "react";
 export default function LoginPage() {
   const {session} = useSession();
   const router = useRouter();
-
-  //console.log("LoginPage render, session =", session);
-
+  
   // Redirect if already logged in
   useEffect(() => {
-    //console.log("useEffect triggered, session =", session);
+
     if (session) router.push("/dashboard");
     
   }, [session]);

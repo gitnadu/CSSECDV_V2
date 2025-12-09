@@ -33,7 +33,7 @@ export default function GradesPageClient({ initialEnrollments }) {
         alert(result.error || 'Failed to drop course');
       }
     } catch (error) {
-      console.error('Drop course error:', error);
+      console.error("ERROR");
       alert('An error occurred while dropping the course');
     } finally {
       setIsDropping(false);

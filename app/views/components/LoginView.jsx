@@ -11,7 +11,6 @@ export default function LoginView() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  //console.log("Submitting login with:", formData);
   const { login } = useSession();
   
   const handleSubmit = async () => {
@@ -26,7 +25,7 @@ export default function LoginView() {
       }
 
     } catch (err) {
-      console.log("the error inside handleSubmit:", err.message);
+      console.error("ERROR");
       setError('An error occurred during login');
     } finally {
       setLoading(false);

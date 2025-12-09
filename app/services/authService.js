@@ -4,14 +4,14 @@ class AuthService {
     async login(username, password) {
       try {
         const response = await api.post("/api/auth/login", { username, password });
-        console.log("response from api.post:", response);
+        
 
         return {
           success: true,
           user: response.user,
         };
       } catch (err) {
-        console.error("AuthService.login error:", err);
+        console.error("ERROR");
 
         return {
           success: false,
@@ -29,7 +29,7 @@ class AuthService {
 
       return await res.json();
     } catch (err) {
-      console.error("Logout failed:", err);
+      console.error("ERROR");
       return { success: false, error: err.message };
     }
   }
@@ -48,7 +48,7 @@ class AuthService {
       };
 
     } catch (err) {
-      console.error("getCurrentUser() failed:", err);
+      console.error("ERROR");
       return {
         success: false,
         user: null,
@@ -86,7 +86,7 @@ class AuthService {
         message: response.message || "Password changed successfully"
       };
     } catch (err) {
-      console.error("AuthService.changePassword error:", err);
+      console.error("ERROR");
       return {
         success: false,
         error: err.message || "Failed to change password"
@@ -107,7 +107,7 @@ class AuthService {
         message: response.message || "Profile updated successfully"
       };
     } catch (err) {
-      console.error("AuthService.updateProfile error:", err);
+      console.error("ERROR");
       return {
         success: false,
         error: err.message || "Failed to update profile"

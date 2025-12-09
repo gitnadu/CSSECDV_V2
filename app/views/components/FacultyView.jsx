@@ -330,7 +330,6 @@ function EnrollmentCard({ enrollment, gradeOptions, uploadGrade }) {
 
   const handleSave = () => {
     if (newGrade && newGrade !== '') {
-      console.log('Uploading grade:', newGrade, 'for enrollment ID:', enrollment.id);
       uploadGrade(enrollment.id, newGrade);
       setIsEditing(false);
     }

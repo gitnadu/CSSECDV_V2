@@ -42,7 +42,7 @@ export default function SettingsPageClient({ session }) {
         }
       }
     } catch (err) {
-      console.error('Error loading security questions:', err);
+      console.error("ERROR");
     }
   };
 
